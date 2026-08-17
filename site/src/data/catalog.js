@@ -18,6 +18,12 @@ export function potreeViewerUrl(metadataPath, title) {
   return `${r2PublicBase}/potree-app/index.html?${q.toString()}`;
 }
 
+export function potreeClouds(stand) {
+  const p = stand?.potree;
+  if (!p) return [];
+  return Array.isArray(p) ? p : [p];
+}
+
 export const stages = [
   { id: "raw", label: "raw", hint: "original sensor cloud" },
   { id: "normalized", label: "normalized", hint: "Z = height above ground" },
@@ -55,10 +61,16 @@ export const stands = [
     },
     products: ["DTM", "COPC", "3DFin stems", "TreeX stems", "field plot"],
     experiments: ["3dfin-vs-treex", "reconstruct"],
-    potree: {
-      label: "TLS curvature thinning 10%",
-      metadataPath: "/stands/ruil/metadata.json",
-    },
+    potree: [
+      {
+        label: "TLS curvature thinning 5%",
+        metadataPath: "/stands/ruil/curvature05/metadata.json",
+      },
+      {
+        label: "TLS curvature thinning 10%",
+        metadataPath: "/stands/ruil/metadata.json",
+      },
+    ],
   },
   {
     id: "sequoia",
@@ -100,10 +112,16 @@ export const stands = [
     },
     products: ["DTM", "COPC", "3DFin stems", "TreeX stems", "field plot"],
     experiments: ["3dfin-vs-treex"],
-    potree: {
-      label: "TLS curvature thinning 10%",
-      metadataPath: "/stands/lawson_01/metadata.json",
-    },
+    potree: [
+      {
+        label: "TLS curvature thinning 5%",
+        metadataPath: "/stands/lawson_01/curvature05/metadata.json",
+      },
+      {
+        label: "TLS curvature thinning 10%",
+        metadataPath: "/stands/lawson_01/metadata.json",
+      },
+    ],
   },
   {
     id: "lawson_02",
@@ -144,10 +162,16 @@ export const stands = [
     },
     products: ["3DFin stems", "TreeX stems", "field plot"],
     experiments: ["3dfin-vs-treex"],
-    potree: {
-      label: "TLS curvature thinning 10%",
-      metadataPath: "/stands/oregon_01/metadata.json",
-    },
+    potree: [
+      {
+        label: "TLS curvature thinning 5%",
+        metadataPath: "/stands/oregon_01/curvature05/metadata.json",
+      },
+      {
+        label: "TLS curvature thinning 10%",
+        metadataPath: "/stands/oregon_01/metadata.json",
+      },
+    ],
   },
   {
     id: "oregon_02",
@@ -187,10 +211,16 @@ export const stands = [
     },
     products: ["DTM", "COPC", "3DFin stems", "TreeX stems", "field plot", "thinning 30%"],
     experiments: ["3dfin-vs-treex"],
-    potree: {
-      label: "TLS curvature thinning 10%",
-      metadataPath: "/stands/roble/metadata.json",
-    },
+    potree: [
+      {
+        label: "TLS curvature thinning 5%",
+        metadataPath: "/stands/roble/curvature05/metadata.json",
+      },
+      {
+        label: "TLS curvature thinning 10%",
+        metadataPath: "/stands/roble/metadata.json",
+      },
+    ],
   },
   {
     id: "rauli_01",

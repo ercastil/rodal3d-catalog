@@ -18,11 +18,22 @@
     </div>
     <StagePipeline :status="s.stages" />
 
-    <div v-if="potreeSrc" class="potree-block">
+    <div v-if="clouds.length" class="potree-block">
       <div class="potree-head">
         <div>
           <div class="kicker">point cloud</div>
-          <p class="potree-label">{{ s.potree.label }}</p>
+          <div class="potree-tabs">
+            <button
+              v-for="(c, i) in clouds"
+              :key="c.metadataPath"
+              type="button"
+              class="potree-tab"
+              :class="{ active: i === selected }"
+              @click="selected = i"
+            >
+              {{ c.label }}
+            </button>
+          </div>
         </div>
         <a class="potree-open" :href="potreeSrc" target="_blank" rel="noopener noreferrer">
           open in new tab
@@ -89,9 +100,9 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { RouterLink } from "vue-router";
-import { standById, siteMeta, potreeViewerUrl } from "../data/catalog.js";
+import { standById, siteMeta, potreeViewerUrl, potreeClouds } from "../data/catalog.js";
 import SensorBadge from "../components/SensorBadge.vue";
 import StagePipeline from "../components/StagePipeline.vue";
 import StandMap from "../components/StandMap.vue";
@@ -101,9 +112,18 @@ const s = computed(() => standById(props.id));
 const present = computed(() =>
   s.value ? ["TLS", "MLS", "ULS"].filter((k) => s.value.sensors[k]) : [],
 );
+const clouds = computed(() => potreeClouds(s.value));
+const selected = ref(0);
+watch(
+  () => props.id,
+  () => {
+    selected.value = 0;
+  },
+);
+const activeCloud = computed(() => clouds.value[selected.value] ?? clouds.value[0] ?? null);
 const potreeSrc = computed(() =>
-  s.value?.potree
-    ? potreeViewerUrl(s.value.potree.metadataPath, `${s.value.name} TLS`)
+  activeCloud.value
+    ? potreeViewerUrl(activeCloud.value.metadataPath, `${s.value.name} TLS`)
     : null,
 );
 </script>
@@ -156,6 +176,27 @@ const potreeSrc = computed(() =>
   margin: 4px 0 0;
   color: var(--muted);
   font-size: 0.92rem;
+}
+.potree-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.potree-tab {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.potree-tab.active {
+  border-color: var(--gold);
+  color: var(--gold);
 }
 .potree-open {
   font-family: var(--mono);
