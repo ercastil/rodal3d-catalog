@@ -18,6 +18,24 @@
     </div>
     <StagePipeline :status="s.stages" />
 
+    <div v-if="potreeSrc" class="potree-block">
+      <div class="potree-head">
+        <div>
+          <div class="kicker">point cloud</div>
+          <p class="potree-label">{{ s.potree.label }}</p>
+        </div>
+        <a class="potree-open" :href="potreeSrc" target="_blank" rel="noopener noreferrer">
+          open in new tab
+        </a>
+      </div>
+      <iframe
+        class="potree-frame"
+        :src="potreeSrc"
+        :title="`${s.name} Potree viewer`"
+        allow="fullscreen"
+      ></iframe>
+    </div>
+
     <div class="grid" style="grid-template-columns: 1.2fr 0.8fr; margin-top: 28px">
       <div>
         <StandMap :active-id="s.id" />
@@ -73,7 +91,7 @@
 <script setup>
 import { computed } from "vue";
 import { RouterLink } from "vue-router";
-import { standById, siteMeta } from "../data/catalog.js";
+import { standById, siteMeta, potreeViewerUrl } from "../data/catalog.js";
 import SensorBadge from "../components/SensorBadge.vue";
 import StagePipeline from "../components/StagePipeline.vue";
 import StandMap from "../components/StandMap.vue";
@@ -82,6 +100,11 @@ const props = defineProps({ id: { type: String, required: true } });
 const s = computed(() => standById(props.id));
 const present = computed(() =>
   s.value ? ["TLS", "MLS", "ULS"].filter((k) => s.value.sensors[k]) : [],
+);
+const potreeSrc = computed(() =>
+  s.value?.potree
+    ? potreeViewerUrl(s.value.potree.metadataPath, `${s.value.name} TLS`)
+    : null,
 );
 </script>
 
@@ -118,6 +141,37 @@ const present = computed(() =>
   font-family: var(--mono);
   font-size: 11px;
   color: var(--gold-2);
+}
+.potree-block {
+  margin: 28px 0 8px;
+}
+.potree-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.potree-label {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.potree-open {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  white-space: nowrap;
+}
+.potree-frame {
+  display: block;
+  width: 100%;
+  height: min(72vh, 720px);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #111;
 }
 @media (max-width: 800px) {
   .grid[style] {

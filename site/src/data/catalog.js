@@ -7,6 +7,17 @@ export const siteMeta = {
   mockup: true,
 };
 
+/** Public R2 development URL (rate-limited; swap for a custom domain later). */
+export const r2PublicBase =
+  "https://pub-394184f1266c46d1b234a4b7f925fff2.r2.dev";
+
+export function potreeViewerUrl(metadataPath, title) {
+  const metadataUrl = `${r2PublicBase}${metadataPath}`;
+  const q = new URLSearchParams({ metadata: metadataUrl });
+  if (title) q.set("title", title);
+  return `${r2PublicBase}/potree-app/index.html?${q.toString()}`;
+}
+
 export const stages = [
   { id: "raw", label: "raw", hint: "original sensor cloud" },
   { id: "normalized", label: "normalized", hint: "Z = height above ground" },
@@ -44,6 +55,10 @@ export const stands = [
     },
     products: ["DTM", "COPC", "3DFin stems", "TreeX stems", "field plot"],
     experiments: ["3dfin-vs-treex", "reconstruct"],
+    potree: {
+      label: "TLS simplified · clipped",
+      metadataPath: "/stands/ruil/metadata.json",
+    },
   },
   {
     id: "sequoia",
