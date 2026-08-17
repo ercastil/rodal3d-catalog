@@ -33,6 +33,11 @@
   </div>
 
   <script>
+    const UTM18S =
+      "+proj=utm +zone=18 +south +datum=WGS84 +units=m +no_defs";
+    proj4.defs("EPSG:32718", UTM18S);
+    proj4.defs("epsg:32718", UTM18S);
+
     const params = new URLSearchParams(window.location.search);
     const metadataUrl = params.get("metadata");
     const title = params.get("title") || "point cloud";
@@ -40,7 +45,7 @@
     window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
     viewer.setEDLEnabled(true);
     viewer.setFOV(60);
-    viewer.setPointBudget(2_000_000);
+    viewer.setPointBudget(3_000_000);
     viewer.loadSettingsFromURL();
     viewer.setBackground("gradient");
     viewer.setDescription(title);
@@ -55,14 +60,18 @@
     if (!metadataUrl) {
       viewer.setDescription("Missing ?metadata= URL");
     } else {
-      Potree.loadPointCloud(metadataUrl, title, (e) => {
+      Potree.loadPointCloud(metadataUrl, title).then((e) => {
         const pointcloud = e.pointcloud;
         const material = pointcloud.material;
-        material.size = 1;
+        material.size = 1.2;
         material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
         material.shape = Potree.PointShape.SQUARE;
+        material.activeAttributeName = "elevation";
         viewer.scene.addPointCloud(pointcloud);
         viewer.fitToScreen();
+      }).catch((err) => {
+        console.error("Failed to load point cloud", err);
+        viewer.setDescription("Failed to load point cloud");
       });
     }
   </script>

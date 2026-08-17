@@ -56,7 +56,7 @@ export const stands = [
     products: ["DTM", "COPC", "3DFin stems", "TreeX stems", "field plot"],
     experiments: ["3dfin-vs-treex", "reconstruct"],
     potree: {
-      label: "TLS simplified · clipped",
+      label: "TLS curvature thinning 10%",
       metadataPath: "/stands/ruil/metadata.json",
     },
   },
@@ -100,6 +100,10 @@ export const stands = [
     },
     products: ["DTM", "COPC", "3DFin stems", "TreeX stems", "field plot"],
     experiments: ["3dfin-vs-treex"],
+    potree: {
+      label: "TLS curvature thinning 10%",
+      metadataPath: "/stands/lawson_01/metadata.json",
+    },
   },
   {
     id: "lawson_02",
@@ -140,6 +144,10 @@ export const stands = [
     },
     products: ["3DFin stems", "TreeX stems", "field plot"],
     experiments: ["3dfin-vs-treex"],
+    potree: {
+      label: "TLS curvature thinning 10%",
+      metadataPath: "/stands/oregon_01/metadata.json",
+    },
   },
   {
     id: "oregon_02",
@@ -179,6 +187,10 @@ export const stands = [
     },
     products: ["DTM", "COPC", "3DFin stems", "TreeX stems", "field plot", "thinning 30%"],
     experiments: ["3dfin-vs-treex"],
+    potree: {
+      label: "TLS curvature thinning 10%",
+      metadataPath: "/stands/roble/metadata.json",
+    },
   },
   {
     id: "rauli_01",
