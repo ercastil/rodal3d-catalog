@@ -11,10 +11,11 @@ export const siteMeta = {
 export const r2PublicBase =
   "https://pub-394184f1266c46d1b234a4b7f925fff2.r2.dev";
 
-export function potreeViewerUrl(metadataPath, title) {
+export function potreeViewerUrl(metadataPath, title, { gui = false } = {}) {
   const metadataUrl = `${r2PublicBase}${metadataPath}`;
   const q = new URLSearchParams({ metadata: metadataUrl });
   if (title) q.set("title", title);
+  if (gui) q.set("gui", "1");
   return `${r2PublicBase}/potree-app/index.html?${q.toString()}`;
 }
 

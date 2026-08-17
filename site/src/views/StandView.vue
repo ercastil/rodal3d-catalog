@@ -18,10 +18,12 @@
     </div>
     <StagePipeline :status="s.stages" />
 
-    <div v-if="clouds.length" class="potree-block">
-      <div class="potree-head">
-        <div>
-          <div class="kicker">point cloud</div>
+    <div class="stand-hero">
+      <div class="stand-hero-map">
+        <StandMap :active-id="s.id" />
+      </div>
+      <div v-if="clouds.length" class="stand-hero-viewer">
+        <div class="potree-head">
           <div class="potree-tabs">
             <button
               v-for="(c, i) in clouds"
@@ -34,25 +36,18 @@
               {{ c.label }}
             </button>
           </div>
+          <a class="potree-open" :href="potreeSrcGui" target="_blank" rel="noopener noreferrer">
+            open in new tab
+          </a>
         </div>
-        <a class="potree-open" :href="potreeSrc" target="_blank" rel="noopener noreferrer">
-          open in new tab
-        </a>
+        <iframe
+          class="potree-frame"
+          :src="potreeSrc"
+          :title="`${s.name} Potree viewer`"
+          allow="fullscreen"
+        ></iframe>
       </div>
-      <iframe
-        class="potree-frame"
-        :src="potreeSrc"
-        :title="`${s.name} Potree viewer`"
-        allow="fullscreen"
-      ></iframe>
-    </div>
-
-    <div class="grid" style="grid-template-columns: 1.2fr 0.8fr; margin-top: 28px">
-      <div>
-        <StandMap :active-id="s.id" />
-        <p v-if="s.ulsNote" class="kicker" style="margin-top: 10px">{{ s.ulsNote }}</p>
-      </div>
-      <div class="card">
+      <div v-else class="card">
         <div class="kicker">sensors</div>
         <table class="meta">
           <tbody>
@@ -77,6 +72,34 @@
             {{ s.experiments.join(", ") }}
           </RouterLink>
         </div>
+      </div>
+    </div>
+    <p v-if="s.ulsNote" class="kicker" style="margin-top: 10px">{{ s.ulsNote }}</p>
+
+    <div v-if="clouds.length" class="card" style="margin-top: 28px">
+      <div class="kicker">sensors</div>
+      <table class="meta">
+        <tbody>
+          <tr v-for="k in ['TLS', 'MLS', 'ULS']" :key="k">
+            <th>{{ k }}</th>
+            <td v-if="s.sensors[k]">
+              {{ s.scan[k.toLowerCase()] || "—" }}
+              · {{ s.sizesGb[k.toLowerCase()] }} G
+            </td>
+            <td v-else style="color: var(--faint)">none</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="kicker" style="margin-top: 16px">products</div>
+      <p v-if="s.products.length" style="margin: 8px 0; color: var(--muted)">
+        {{ s.products.join(" · ") }}
+      </p>
+      <p v-else class="kicker">no derived products yet</p>
+      <div v-if="s.experiments.length" style="margin-top: 16px">
+        <div class="kicker">experiments</div>
+        <RouterLink to="/experiments" style="color: var(--gold)">
+          {{ s.experiments.join(", ") }}
+        </RouterLink>
       </div>
     </div>
 
@@ -126,6 +149,11 @@ const potreeSrc = computed(() =>
     ? potreeViewerUrl(activeCloud.value.metadataPath, `${s.value.name} TLS`)
     : null,
 );
+const potreeSrcGui = computed(() =>
+  activeCloud.value
+    ? potreeViewerUrl(activeCloud.value.metadataPath, `${s.value.name} TLS`, { gui: true })
+    : null,
+);
 </script>
 
 <style scoped>
@@ -162,36 +190,56 @@ const potreeSrc = computed(() =>
   font-size: 11px;
   color: var(--gold-2);
 }
-.potree-block {
-  margin: 28px 0 8px;
+.stand-hero {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.25fr);
+  grid-template-rows: minmax(420px, min(58vh, 560px));
+  gap: 14px;
+  align-items: stretch;
+  margin-top: 24px;
+}
+.stand-hero-map,
+.stand-hero-viewer {
+  min-height: 0;
+  height: 100%;
+}
+.stand-hero-map :deep(.map) {
+  height: 100%;
+  border-radius: 10px;
+}
+.stand-hero-viewer {
+  position: relative;
+  min-width: 0;
 }
 .potree-head {
+  position: absolute;
+  z-index: 2;
+  top: 10px;
+  left: 10px;
+  right: 10px;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 10px;
+  pointer-events: none;
 }
-.potree-label {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 0.92rem;
+.potree-head > * {
+  pointer-events: auto;
 }
 .potree-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 8px;
 }
 .potree-tab {
   font-family: var(--mono);
   font-size: 11px;
   letter-spacing: 0.04em;
   padding: 5px 10px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 999px;
-  background: transparent;
-  color: var(--muted);
+  background: rgba(10, 10, 12, 0.72);
+  color: #ddd;
   cursor: pointer;
 }
 .potree-tab.active {
@@ -209,14 +257,15 @@ const potreeSrc = computed(() =>
 .potree-frame {
   display: block;
   width: 100%;
-  height: min(72vh, 720px);
+  height: 100%;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: #111;
 }
 @media (max-width: 800px) {
-  .grid[style] {
-    grid-template-columns: 1fr !important;
+  .stand-hero {
+    grid-template-columns: 1fr;
+    grid-template-rows: 280px minmax(320px, 55vh);
   }
 }
 </style>

@@ -122,6 +122,10 @@ onMounted(async () => {
   await nextTick();
   map.invalidateSize();
   focusActive({ animate: false });
+  requestAnimationFrame(() => {
+    map.invalidateSize();
+    focusActive({ animate: false });
+  });
 });
 
 watch(

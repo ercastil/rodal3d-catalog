@@ -11,6 +11,14 @@
   <link rel="stylesheet" type="text/css" href="./libs/jstree/themes/mixed/style.css">
   <style>
     html, body { margin: 0; height: 100%; background: #111; }
+    body.no-gui #potree_sidebar_container,
+    body.no-gui .potree_menu_toggle,
+    body.no-gui #potree_quick_buttons,
+    body.no-gui #potree_description,
+    body.no-gui #potree_map_toggle,
+    body.no-gui .compass {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -41,6 +49,9 @@
     const params = new URLSearchParams(window.location.search);
     const metadataUrl = params.get("metadata");
     const title = params.get("title") || "point cloud";
+    const showGui = params.get("gui") === "1";
+
+    if (!showGui) document.body.classList.add("no-gui");
 
     window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
     viewer.setEDLEnabled(true);
@@ -48,14 +59,16 @@
     viewer.setPointBudget(3_000_000);
     viewer.loadSettingsFromURL();
     viewer.setBackground("gradient");
-    viewer.setDescription(title);
+    viewer.setDescription(showGui ? title : "");
 
-    viewer.loadGUI(() => {
-      viewer.setLanguage("en");
-      $("#menu_appearance").next().show();
-      $("#menu_tools").next().show();
-      viewer.toggleSidebar();
-    });
+    if (showGui) {
+      viewer.loadGUI(() => {
+        viewer.setLanguage("en");
+        $("#menu_appearance").next().show();
+        $("#menu_tools").next().show();
+        viewer.toggleSidebar();
+      });
+    }
 
     if (!metadataUrl) {
       viewer.setDescription("Missing ?metadata= URL");
