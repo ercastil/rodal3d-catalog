@@ -16,7 +16,7 @@ import { palettes, theme, applyTheme } from "./theme.js";
         </div>
         <div class="header-right">
           <nav>
-            <RouterLink to="/catalog">Catalog</RouterLink>
+            <RouterLink to="/">Catalog</RouterLink>
             <RouterLink to="/experiments">Experiments</RouterLink>
             <RouterLink to="/layout">Layout</RouterLink>
           </nav>

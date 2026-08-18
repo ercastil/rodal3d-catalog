@@ -13,8 +13,11 @@ import { theme } from "../theme.js";
 const props = defineProps({
   activeId: { type: String, default: "" },
   interactive: { type: Boolean, default: true },
+  navigateOnClick: { type: Boolean, default: true },
+  scrollWheelZoom: { type: Boolean, default: false },
 });
 
+const emit = defineEmits(["select"]);
 const el = ref(null);
 const router = useRouter();
 let map;
@@ -70,7 +73,12 @@ function bind(feature, lyr) {
     className: "map-tip",
   });
   if (props.interactive) {
-    lyr.on("click", () => router.push({ name: "stand", params: { id } }));
+    lyr.on("click", () => {
+      emit("select", id);
+      if (props.navigateOnClick) {
+        router.push({ name: "stand", params: { id } });
+      }
+    });
   }
 }
 
@@ -106,7 +114,7 @@ onMounted(async () => {
   map = L.map(el.value, {
     zoomControl: true,
     attributionControl: true,
-    scrollWheelZoom: false,
+    scrollWheelZoom: props.scrollWheelZoom,
   });
   tiles = L.tileLayer("https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
     attribution: "© Google",
