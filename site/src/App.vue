@@ -1,10 +1,14 @@
 <script setup>
-import { RouterLink, RouterView } from "vue-router";
+import { computed } from "vue";
+import { RouterLink, RouterView, useRoute } from "vue-router";
 import { palettes, theme, applyTheme } from "./theme.js";
+
+const route = useRoute();
+const isHome = computed(() => route.name === "home" || route.name === "catalog");
 </script>
 
 <template>
-  <div class="app">
+  <div class="app" :class="{ 'app-home': isHome }">
     <header class="site-header">
       <div class="wrap inner">
         <div class="header-left">

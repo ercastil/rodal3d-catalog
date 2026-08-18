@@ -110,19 +110,24 @@ function onCardClick(id) {
 .home-shell {
   display: grid;
   grid-template-columns: minmax(0, 0.98fr) minmax(0, 1.17fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: 1vw;
   width: 100%;
   padding: 0.8vw 1.2vw 1vw;
   flex: 1;
   min-height: 0;
+  height: 100%;
+  overflow: hidden;
   box-sizing: border-box;
 }
 .home-map {
   min-width: 0;
   min-height: 0;
+  overflow: hidden;
 }
 .home-map :deep(.map) {
   height: 100%;
+  min-height: 0;
   border-radius: 10px;
 }
 .home-side {
@@ -130,6 +135,7 @@ function onCardClick(id) {
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+  overflow: hidden;
   gap: 0.8vw;
 }
 .home-stats {
@@ -159,6 +165,7 @@ function onCardClick(id) {
   flex-direction: column;
   min-height: 0;
   flex: 1;
+  overflow: hidden;
 }
 .home-catalog-head {
   display: flex;
@@ -200,11 +207,12 @@ function onCardClick(id) {
 @media (max-width: 900px) {
   .home-shell {
     grid-template-columns: 1fr;
-    grid-template-rows: minmax(38vh, 42vh) minmax(0, 1fr);
+    grid-template-rows: minmax(32vh, 38vh) minmax(0, 1fr);
     min-height: 0;
+    overflow: hidden;
   }
   .home-stand-grid {
-    overflow: visible;
+    overflow: auto;
   }
 }
 </style>
