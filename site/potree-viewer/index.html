@@ -19,6 +19,79 @@
     body.no-gui .compass {
       display: none !important;
     }
+    .hud {
+      position: absolute;
+      z-index: 20;
+      pointer-events: none;
+      font-family: ui-monospace, "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
+      color: #ddd;
+    }
+    .hud button, .hud input, .hud label {
+      pointer-events: auto;
+    }
+    .hud-top {
+      top: 10px;
+      left: 72px;
+      right: 10px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .hud-left {
+      top: 10px;
+      left: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .hud-panel {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      background: rgba(10, 10, 12, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 10px;
+    }
+    .hud-label {
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #aaa;
+      white-space: nowrap;
+    }
+    .hud-value {
+      font-size: 11px;
+      color: #e0b56a;
+      min-width: 2.6rem;
+    }
+    .hud-btn {
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      padding: 5px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 999px;
+      background: rgba(10, 10, 12, 0.72);
+      color: #ddd;
+      cursor: pointer;
+    }
+    .hud-btn.active {
+      border-color: #e0b56a;
+      color: #e0b56a;
+    }
+    .hud-left .hud-btn {
+      min-width: 52px;
+      text-align: center;
+    }
+    .hud-slider {
+      width: 120px;
+      accent-color: #e0b56a;
+    }
+    .hud-slider.budget {
+      width: 160px;
+    }
   </style>
 </head>
 <body>
@@ -38,6 +111,30 @@
   <div class="potree_container" style="position:absolute;width:100%;height:100%;left:0;top:0;">
     <div id="potree_render_area"></div>
     <div id="potree_sidebar_container"></div>
+  </div>
+
+  <div class="hud hud-left">
+    <button type="button" class="hud-btn" data-view="top">Top</button>
+    <button type="button" class="hud-btn" data-view="bottom">Bottom</button>
+    <button type="button" class="hud-btn" data-view="side">Side</button>
+    <button type="button" class="hud-btn" data-view="iso">45°</button>
+  </div>
+  <div class="hud hud-top">
+    <div class="hud-panel">
+      <span class="hud-label">point</span>
+      <button type="button" class="hud-btn active" data-shape="square">Square</button>
+      <button type="button" class="hud-btn" data-shape="circle">Circle</button>
+    </div>
+    <div class="hud-panel">
+      <span class="hud-label">budget</span>
+      <input id="budget" class="hud-slider budget" type="range" min="1000000" max="50000000" step="1000000" value="5000000">
+      <span id="budget-val" class="hud-value">5M</span>
+    </div>
+    <div class="hud-panel">
+      <span class="hud-label">size</span>
+      <input id="psize" class="hud-slider" type="range" min="0.10" max="2.00" step="0.05" value="0.65">
+      <span id="psize-val" class="hud-value">0.65</span>
+    </div>
   </div>
 
   <script>
@@ -62,6 +159,64 @@
     viewer.setBackground("gradient");
     viewer.setDescription(showGui ? title : "");
 
+    const DEFAULT_SIZE = 0.65;
+    let pointSize = DEFAULT_SIZE;
+    let pointShape = Potree.PointShape.SQUARE;
+
+    function applyMaterial() {
+      for (const pc of viewer.scene.pointclouds) {
+        pc.material.size = pointSize;
+        pc.material.shape = pointShape;
+        pc.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+      }
+    }
+
+    function setActive(selector, el) {
+      document.querySelectorAll(selector).forEach((b) => b.classList.remove("active"));
+      el.classList.add("active");
+    }
+
+    document.querySelectorAll("[data-view]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        setActive("[data-view]", btn);
+        const view = btn.dataset.view;
+        if (view === "top") viewer.setTopView();
+        else if (view === "bottom") viewer.setBottomView();
+        else if (view === "side") viewer.setFrontView();
+        else if (view === "iso") {
+          viewer.scene.view.yaw = Math.PI / 4;
+          viewer.scene.view.pitch = -Math.PI / 4;
+          viewer.fitToScreen();
+        }
+      });
+    });
+
+    document.querySelectorAll("[data-shape]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        setActive("[data-shape]", btn);
+        pointShape = btn.dataset.shape === "circle"
+          ? Potree.PointShape.CIRCLE
+          : Potree.PointShape.SQUARE;
+        applyMaterial();
+      });
+    });
+
+    const budgetEl = document.getElementById("budget");
+    const budgetVal = document.getElementById("budget-val");
+    budgetEl.addEventListener("input", () => {
+      const n = Number(budgetEl.value);
+      viewer.setPointBudget(n);
+      budgetVal.textContent = `${Math.round(n / 1e6)}M`;
+    });
+
+    const sizeEl = document.getElementById("psize");
+    const sizeVal = document.getElementById("psize-val");
+    sizeEl.addEventListener("input", () => {
+      pointSize = Number(sizeEl.value);
+      sizeVal.textContent = pointSize.toFixed(2);
+      applyMaterial();
+    });
+
     if (showGui) {
       viewer.loadGUI(() => {
         viewer.setLanguage("en");
@@ -77,9 +232,9 @@
       Potree.loadPointCloud(metadataUrl, title).then((e) => {
         const pointcloud = e.pointcloud;
         const material = pointcloud.material;
-        material.size = 0.65;
+        material.size = pointSize;
         material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-        material.shape = Potree.PointShape.SQUARE;
+        material.shape = pointShape;
         material.activeAttributeName = "elevation";
         viewer.scene.addPointCloud(pointcloud);
         viewer.fitToScreen();
