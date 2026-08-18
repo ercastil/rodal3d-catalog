@@ -1,24 +1,30 @@
 <template>
   <section class="stand-page" v-if="s">
-    <div class="stand-bar">
-      <p class="eyebrow">
-        <RouterLink to="/catalog" style="color: var(--gold)">catalog</RouterLink>
-        / {{ s.number }}
-      </p>
-      <h1>{{ s.name }}</h1>
-      <p class="stand-bar-meta">
-        <em>{{ s.species }}</em>
-        · {{ s.areaHa }} ha · {{ siteMeta.crs }}
-      </p>
-      <div class="stand-bar-sensors">
-        <SensorBadge v-for="k in present" :key="k" :kind="k" />
-      </div>
-    </div>
-
     <div class="stand-hero">
-      <div class="stand-hero-map">
-        <StandMap :active-id="s.id" />
+      <div class="stand-left">
+        <div class="stand-summary">
+          <p class="eyebrow">
+            <RouterLink to="/catalog" style="color: var(--gold)">catalog</RouterLink>
+            / {{ s.number }}
+          </p>
+          <h1>{{ s.name }}</h1>
+          <p class="stand-summary-species">
+            <em>{{ s.species }}</em>
+          </p>
+          <p class="stand-summary-meta">
+            {{ s.areaHa }} ha · {{ s.group }} · {{ siteMeta.crs }}
+          </p>
+          <div class="stand-summary-sensors">
+            <SensorBadge v-for="k in present" :key="k" :kind="k" />
+          </div>
+          <StagePipeline :status="s.stages" />
+          <p v-if="s.ulsNote" class="kicker stand-summary-note">{{ s.ulsNote }}</p>
+        </div>
+        <div class="stand-hero-map">
+          <StandMap :active-id="s.id" />
+        </div>
       </div>
+
       <div v-if="clouds.length" class="stand-hero-viewer">
         <div class="potree-head">
           <div class="potree-tabs">
@@ -45,27 +51,11 @@
         ></iframe>
       </div>
       <div v-else class="card stand-hero-fallback">
-        <div class="kicker">sensors</div>
-        <table class="meta">
-          <tbody>
-            <tr v-for="k in ['TLS', 'MLS', 'ULS']" :key="k">
-              <th>{{ k }}</th>
-              <td v-if="s.sensors[k]">
-                {{ s.scan[k.toLowerCase()] || "—" }}
-                · {{ s.sizesGb[k.toLowerCase()] }} G
-              </td>
-              <td v-else style="color: var(--faint)">none</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="kicker">point cloud</div>
+        <p class="kicker" style="margin-top: 10px">no Potree cloud yet</p>
       </div>
-    </div>
 
-    <div class="wrap stand-more">
-      <p v-if="s.ulsNote" class="kicker" style="margin: 0 0 16px">{{ s.ulsNote }}</p>
-      <StagePipeline :status="s.stages" />
-
-      <div class="card" style="margin-top: 20px">
+      <aside class="stand-info">
         <div class="kicker">sensors</div>
         <table class="meta">
           <tbody>
@@ -79,22 +69,22 @@
             </tr>
           </tbody>
         </table>
+
         <div class="kicker" style="margin-top: 16px">products</div>
-        <p v-if="s.products.length" style="margin: 8px 0; color: var(--muted)">
+        <p v-if="s.products.length" class="stand-info-text">
           {{ s.products.join(" · ") }}
         </p>
         <p v-else class="kicker">no derived products yet</p>
+
         <div v-if="s.experiments.length" style="margin-top: 16px">
           <div class="kicker">experiments</div>
           <RouterLink to="/experiments" style="color: var(--gold)">
             {{ s.experiments.join(", ") }}
           </RouterLink>
         </div>
-      </div>
 
-      <h2 style="margin: 36px 0 12px; font-size: 1.6rem">Files (mock)</h2>
-      <div class="grid" style="grid-template-columns: repeat(3, 1fr)">
-        <div v-for="k in ['TLS', 'MLS', 'ULS']" :key="k" class="card">
+        <div class="kicker" style="margin-top: 18px">files (mock)</div>
+        <div v-for="k in ['TLS', 'MLS', 'ULS']" :key="k" class="stand-files-block">
           <div class="kicker">{{ k }}</div>
           <ul v-if="s.files[k].length" class="files">
             <li v-for="f in s.files[k]" :key="f">
@@ -103,7 +93,7 @@
           </ul>
           <p v-else class="kicker">no {{ k }}</p>
         </div>
-      </div>
+      </aside>
     </div>
   </section>
   <section v-else class="wrap" style="padding: 48px 0">
@@ -152,63 +142,103 @@ const potreeSrcGui = computed(() =>
   flex-direction: column;
   flex: 1;
   min-height: 0;
-}
-.stand-bar {
-  display: flex;
-  align-items: baseline;
-  gap: 12px 18px;
-  flex-wrap: wrap;
-  padding: 8px 16px 10px;
-}
-.stand-bar h1 {
-  font-family: var(--serif);
-  font-size: 1.45rem;
-  font-weight: 400;
-  margin: 0;
-  letter-spacing: -0.02em;
-}
-.stand-bar-meta {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.92rem;
-}
-.stand-bar-sensors {
-  display: flex;
-  gap: 8px;
-  margin-left: auto;
+  overflow: hidden;
 }
 .stand-hero {
   display: grid;
-  grid-template-columns: minmax(280px, 22vw) minmax(0, 1fr);
-  grid-template-rows: 1fr;
+  grid-template-columns: minmax(200px, 18vw) minmax(0, 1fr) minmax(220px, 22vw);
+  grid-template-rows: minmax(0, 1fr);
   gap: 8px;
-  padding: 0 10px 10px;
-  height: calc(100dvh - 7.25rem);
-  min-height: 520px;
-  align-items: stretch;
-}
-.stand-hero-map,
-.stand-hero-viewer,
-.stand-hero-fallback {
+  padding: 8px 10px 10px;
+  flex: 1;
   min-height: 0;
   height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.stand-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+}
+.stand-summary {
+  flex: 0 0 auto;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px 14px;
+}
+.stand-summary h1 {
+  font-family: var(--serif);
+  font-size: 1.55rem;
+  font-weight: 400;
+  margin: 6px 0 4px;
+  letter-spacing: -0.02em;
+}
+.stand-summary-species {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.stand-summary-meta {
+  margin: 0 0 10px;
+  color: var(--faint);
+  font-size: 0.82rem;
+}
+.stand-summary-sensors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.stand-summary-note {
+  margin: 10px 0 0;
+  line-height: 1.4;
+}
+.stand-hero-map {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 .stand-hero-map :deep(.map) {
   height: 100%;
+  min-height: 0;
   border-radius: 10px;
+}
+.stand-hero-viewer,
+.stand-hero-fallback {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
 }
 .stand-hero-viewer {
   position: relative;
-  min-width: 0;
 }
-.stand-more {
-  padding: 28px 0 48px;
+.stand-info {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px 16px;
+}
+.stand-info-text {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+.stand-files-block {
+  margin-top: 10px;
 }
 .meta {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
-  font-size: 0.92rem;
+  margin-top: 8px;
+  font-size: 0.88rem;
 }
 .meta th {
   text-align: left;
@@ -216,26 +246,27 @@ const potreeSrcGui = computed(() =>
   font-size: 11px;
   color: var(--faint);
   width: 3.5rem;
-  padding: 6px 0;
+  padding: 5px 0;
 }
 .meta td {
-  padding: 6px 0;
+  padding: 5px 0;
   color: var(--muted);
 }
 .files {
   list-style: none;
   padding: 0;
-  margin: 10px 0 0;
+  margin: 6px 0 0;
 }
 .files li {
-  margin: 0 0 8px;
-  font-size: 12px;
+  margin: 0 0 6px;
+  font-size: 11px;
   color: var(--muted);
 }
 .files code {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--gold-2);
+  word-break: break-all;
 }
 .potree-head {
   position: absolute;
@@ -288,18 +319,23 @@ const potreeSrcGui = computed(() =>
   border-radius: 10px;
   background: #111;
 }
-@media (max-width: 900px) {
-  .stand-bar-sensors {
-    margin-left: 0;
+@media (max-width: 1100px) {
+  .stand-hero {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    grid-template-rows: minmax(0, 1fr) minmax(180px, 32vh);
   }
+  .stand-info {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 800px) {
   .stand-hero {
     grid-template-columns: 1fr;
-    grid-template-rows: 240px minmax(360px, 1fr);
-    height: auto;
-    min-height: 0;
+    grid-template-rows: auto 42vh minmax(220px, 1fr);
+    overflow: auto;
   }
-  .stand-hero-viewer {
-    min-height: 55vh;
+  .stand-hero-map {
+    min-height: 180px;
   }
 }
 </style>

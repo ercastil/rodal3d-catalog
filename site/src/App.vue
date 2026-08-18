@@ -4,7 +4,9 @@ import { RouterLink, RouterView, useRoute } from "vue-router";
 import { palettes, theme, applyTheme } from "./theme.js";
 
 const route = useRoute();
-const isHome = computed(() => route.name === "home" || route.name === "catalog");
+const isHome = computed(
+  () => route.name === "home" || route.name === "catalog" || route.name === "stand",
+);
 </script>
 
 <template>
