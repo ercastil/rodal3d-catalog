@@ -1,22 +1,19 @@
 <template>
-  <section class="wrap" style="padding: 28px 0" v-if="s">
-    <p class="eyebrow">
-      <RouterLink to="/catalog" style="color: var(--gold)">catalog</RouterLink>
-      / stand_{{ s.number }}
-    </p>
-    <h1 class="display" style="font-size: 3rem">{{ s.name }}</h1>
-    <p class="lede">
-      <em>{{ s.species }}</em> · {{ s.areaHa }} ha · {{ siteMeta.place }} · {{ siteMeta.crs }}
-    </p>
-
-    <p class="path" style="margin: 16px 0 24px">
-      {{ siteMeta.clusterRoot }}stands/{{ s.id }}/
-    </p>
-
-    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px">
-      <SensorBadge v-for="k in present" :key="k" :kind="k" />
+  <section class="stand-page" v-if="s">
+    <div class="stand-bar">
+      <p class="eyebrow">
+        <RouterLink to="/catalog" style="color: var(--gold)">catalog</RouterLink>
+        / {{ s.number }}
+      </p>
+      <h1>{{ s.name }}</h1>
+      <p class="stand-bar-meta">
+        <em>{{ s.species }}</em>
+        · {{ s.areaHa }} ha · {{ siteMeta.crs }}
+      </p>
+      <div class="stand-bar-sensors">
+        <SensorBadge v-for="k in present" :key="k" :kind="k" />
+      </div>
     </div>
-    <StagePipeline :status="s.stages" />
 
     <div class="stand-hero">
       <div class="stand-hero-map">
@@ -47,7 +44,28 @@
           allow="fullscreen"
         ></iframe>
       </div>
-      <div v-else class="card">
+      <div v-else class="card stand-hero-fallback">
+        <div class="kicker">sensors</div>
+        <table class="meta">
+          <tbody>
+            <tr v-for="k in ['TLS', 'MLS', 'ULS']" :key="k">
+              <th>{{ k }}</th>
+              <td v-if="s.sensors[k]">
+                {{ s.scan[k.toLowerCase()] || "—" }}
+                · {{ s.sizesGb[k.toLowerCase()] }} G
+              </td>
+              <td v-else style="color: var(--faint)">none</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="wrap stand-more">
+      <p v-if="s.ulsNote" class="kicker" style="margin: 0 0 16px">{{ s.ulsNote }}</p>
+      <StagePipeline :status="s.stages" />
+
+      <div class="card" style="margin-top: 20px">
         <div class="kicker">sensors</div>
         <table class="meta">
           <tbody>
@@ -73,46 +91,18 @@
           </RouterLink>
         </div>
       </div>
-    </div>
-    <p v-if="s.ulsNote" class="kicker" style="margin-top: 10px">{{ s.ulsNote }}</p>
 
-    <div v-if="clouds.length" class="card" style="margin-top: 28px">
-      <div class="kicker">sensors</div>
-      <table class="meta">
-        <tbody>
-          <tr v-for="k in ['TLS', 'MLS', 'ULS']" :key="k">
-            <th>{{ k }}</th>
-            <td v-if="s.sensors[k]">
-              {{ s.scan[k.toLowerCase()] || "—" }}
-              · {{ s.sizesGb[k.toLowerCase()] }} G
-            </td>
-            <td v-else style="color: var(--faint)">none</td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="kicker" style="margin-top: 16px">products</div>
-      <p v-if="s.products.length" style="margin: 8px 0; color: var(--muted)">
-        {{ s.products.join(" · ") }}
-      </p>
-      <p v-else class="kicker">no derived products yet</p>
-      <div v-if="s.experiments.length" style="margin-top: 16px">
-        <div class="kicker">experiments</div>
-        <RouterLink to="/experiments" style="color: var(--gold)">
-          {{ s.experiments.join(", ") }}
-        </RouterLink>
-      </div>
-    </div>
-
-    <h2 style="margin: 36px 0 12px; font-size: 1.6rem">Files (mock)</h2>
-    <div class="grid" style="grid-template-columns: repeat(3, 1fr)">
-      <div v-for="k in ['TLS', 'MLS', 'ULS']" :key="k" class="card">
-        <div class="kicker">{{ k }}</div>
-        <ul v-if="s.files[k].length" class="files">
-          <li v-for="f in s.files[k]" :key="f">
-            <code>…/{{ s.id }}/{{ k }}/{{ f }}</code>
-          </li>
-        </ul>
-        <p v-else class="kicker">no {{ k }}</p>
+      <h2 style="margin: 36px 0 12px; font-size: 1.6rem">Files (mock)</h2>
+      <div class="grid" style="grid-template-columns: repeat(3, 1fr)">
+        <div v-for="k in ['TLS', 'MLS', 'ULS']" :key="k" class="card">
+          <div class="kicker">{{ k }}</div>
+          <ul v-if="s.files[k].length" class="files">
+            <li v-for="f in s.files[k]" :key="f">
+              <code>…/{{ s.id }}/{{ k }}/{{ f }}</code>
+            </li>
+          </ul>
+          <p v-else class="kicker">no {{ k }}</p>
+        </div>
       </div>
     </div>
   </section>
@@ -157,6 +147,61 @@ const potreeSrcGui = computed(() =>
 </script>
 
 <style scoped>
+.stand-page {
+  display: flex;
+  flex-direction: column;
+}
+.stand-bar {
+  display: flex;
+  align-items: baseline;
+  gap: 12px 18px;
+  flex-wrap: wrap;
+  padding: 8px 16px 10px;
+}
+.stand-bar h1 {
+  font-family: var(--serif);
+  font-size: 1.45rem;
+  font-weight: 400;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+.stand-bar-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.stand-bar-sensors {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+.stand-hero {
+  display: grid;
+  grid-template-columns: minmax(280px, 22vw) minmax(0, 1fr);
+  grid-template-rows: 1fr;
+  gap: 8px;
+  padding: 0 10px 10px;
+  height: calc(100dvh - 7.25rem);
+  min-height: 520px;
+  align-items: stretch;
+}
+.stand-hero-map,
+.stand-hero-viewer,
+.stand-hero-fallback {
+  min-height: 0;
+  height: 100%;
+}
+.stand-hero-map :deep(.map) {
+  height: 100%;
+  border-radius: 10px;
+}
+.stand-hero-viewer {
+  position: relative;
+  min-width: 0;
+}
+.stand-more {
+  padding: 28px 0 48px;
+}
 .meta {
   width: 100%;
   border-collapse: collapse;
@@ -189,27 +234,6 @@ const potreeSrcGui = computed(() =>
   font-family: var(--mono);
   font-size: 11px;
   color: var(--gold-2);
-}
-.stand-hero {
-  display: grid;
-  grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.25fr);
-  grid-template-rows: minmax(420px, min(58vh, 560px));
-  gap: 14px;
-  align-items: stretch;
-  margin-top: 24px;
-}
-.stand-hero-map,
-.stand-hero-viewer {
-  min-height: 0;
-  height: 100%;
-}
-.stand-hero-map :deep(.map) {
-  height: 100%;
-  border-radius: 10px;
-}
-.stand-hero-viewer {
-  position: relative;
-  min-width: 0;
 }
 .potree-head {
   position: absolute;
@@ -262,10 +286,18 @@ const potreeSrcGui = computed(() =>
   border-radius: 10px;
   background: #111;
 }
-@media (max-width: 800px) {
+@media (max-width: 900px) {
+  .stand-bar-sensors {
+    margin-left: 0;
+  }
   .stand-hero {
     grid-template-columns: 1fr;
-    grid-template-rows: 280px minmax(320px, 55vh);
+    grid-template-rows: 240px minmax(360px, 1fr);
+    height: auto;
+    min-height: 0;
+  }
+  .stand-hero-viewer {
+    min-height: 55vh;
   }
 }
 </style>
