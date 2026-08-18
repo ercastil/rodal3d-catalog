@@ -116,6 +116,12 @@
       gap: 6px;
       padding: 4px 6px;
     }
+    .hud-zoom {
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 1;
+      color: #ddd;
+    }
   </style>
 </head>
 <body>
@@ -182,6 +188,8 @@
           <path class="face lit" d="M12 3 L21 8 L12 13 L3 8 Z"/>
         </svg>
       </button>
+      <button type="button" class="hud-btn hud-view hud-zoom" data-zoom="in" title="Zoom in" aria-label="Zoom in">+</button>
+      <button type="button" class="hud-btn hud-view hud-zoom" data-zoom="out" title="Zoom out" aria-label="Zoom out">−</button>
     </div>
   </div>
 
@@ -236,6 +244,19 @@
           viewer.scene.view.pitch = -Math.PI / 4;
           viewer.fitToScreen();
         }
+      });
+    });
+
+    document.querySelectorAll("[data-zoom]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const view = viewer.scene.view;
+        const pivot = view.getPivot();
+        const factor = btn.dataset.zoom === "in" ? 0.7 : 1.4;
+        const radius = Math.max(0.4, view.radius * factor);
+        const offset = view.direction.clone().multiplyScalar(-radius);
+        view.radius = radius;
+        view.position.copy(pivot.add(offset));
+        if (viewer.setMoveSpeed) viewer.setMoveSpeed(radius);
       });
     });
 
