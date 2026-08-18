@@ -60,13 +60,21 @@ const figures = {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
   margin-top: 28px;
-  align-items: start;
+  align-items: stretch;
 }
 .exp-card {
   display: flex;
   flex-direction: column;
   gap: 14px;
   min-width: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+.exp-copy {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 .exp-copy h2 {
   font-family: var(--serif);
