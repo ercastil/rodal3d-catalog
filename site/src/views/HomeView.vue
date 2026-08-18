@@ -142,7 +142,7 @@ function onCardClick(id) {
 <style scoped>
 .home-shell {
   display: grid;
-  grid-template-columns: minmax(0, 0.65fr) minmax(0, 1.50fr);
+  grid-template-columns: minmax(0, 0.98fr) minmax(0, 1.17fr);
   gap: 1vw;
   width: 100%;
   padding: 0.8vw 1.2vw 1vw;
