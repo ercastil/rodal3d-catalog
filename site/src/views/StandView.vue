@@ -157,14 +157,16 @@ const potreeSrcGui = computed(() =>
   box-sizing: border-box;
 }
 .stand-left {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
   gap: 8px;
   min-width: 0;
   min-height: 0;
+  height: 100%;
 }
 .stand-summary {
-  flex: 0 0 auto;
+  min-height: 0;
+  overflow: auto;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -198,7 +200,6 @@ const potreeSrcGui = computed(() =>
   line-height: 1.4;
 }
 .stand-hero-map {
-  flex: 1;
   min-height: 0;
   overflow: hidden;
 }
