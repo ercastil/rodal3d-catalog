@@ -56,8 +56,9 @@
     window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
     viewer.setEDLEnabled(true);
     viewer.setFOV(60);
-    viewer.setPointBudget(3_000_000);
     viewer.loadSettingsFromURL();
+    viewer.setPointBudget(5_000_000);
+    viewer.setMinNodeSize(0);
     viewer.setBackground("gradient");
     viewer.setDescription(showGui ? title : "");
 
@@ -76,7 +77,7 @@
       Potree.loadPointCloud(metadataUrl, title).then((e) => {
         const pointcloud = e.pointcloud;
         const material = pointcloud.material;
-        material.size = 1.2;
+        material.size = 0.65;
         material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
         material.shape = Potree.PointShape.SQUARE;
         material.activeAttributeName = "elevation";
