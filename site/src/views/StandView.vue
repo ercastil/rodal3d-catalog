@@ -25,20 +25,8 @@
         </div>
       </div>
 
-      <div v-if="clouds.length" class="stand-hero-viewer">
+      <div v-if="activeCloud" class="stand-hero-viewer">
         <div class="potree-head">
-          <div class="potree-tabs">
-            <button
-              v-for="(c, i) in clouds"
-              :key="c.metadataPath"
-              type="button"
-              class="potree-tab"
-              :class="{ active: i === selected }"
-              @click="selected = i"
-            >
-              {{ c.label }}
-            </button>
-          </div>
           <a class="potree-open" :href="potreeSrcGui" target="_blank" rel="noopener noreferrer">
             open in new tab
           </a>
@@ -103,7 +91,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed } from "vue";
 import { RouterLink } from "vue-router";
 import { standById, siteMeta, potreeViewerUrl, potreeClouds } from "../data/catalog.js";
 import SensorBadge from "../components/SensorBadge.vue";
@@ -115,15 +103,7 @@ const s = computed(() => standById(props.id));
 const present = computed(() =>
   s.value ? ["TLS", "MLS", "ULS"].filter((k) => s.value.sensors[k]) : [],
 );
-const clouds = computed(() => potreeClouds(s.value));
-const selected = ref(0);
-watch(
-  () => props.id,
-  () => {
-    selected.value = 0;
-  },
-);
-const activeCloud = computed(() => clouds.value[selected.value] ?? clouds.value[0] ?? null);
+const activeCloud = computed(() => potreeClouds(s.value)[0] ?? null);
 const potreeSrc = computed(() =>
   activeCloud.value
     ? potreeViewerUrl(activeCloud.value.metadataPath, `${s.value.name} TLS`)
@@ -273,36 +253,11 @@ const potreeSrcGui = computed(() =>
   position: absolute;
   z-index: 2;
   top: 10px;
-  left: 10px;
   right: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
   pointer-events: none;
 }
 .potree-head > * {
   pointer-events: auto;
-}
-.potree-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.potree-tab {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  padding: 5px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: 999px;
-  background: rgba(10, 10, 12, 0.72);
-  color: #ddd;
-  cursor: pointer;
-}
-.potree-tab.active {
-  border-color: var(--gold);
-  color: var(--gold);
 }
 .potree-open {
   font-family: var(--mono);

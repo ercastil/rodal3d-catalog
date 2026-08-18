@@ -22,7 +22,9 @@ export function potreeViewerUrl(metadataPath, title, { gui = false } = {}) {
 export function potreeClouds(stand) {
   const p = stand?.potree;
   if (!p) return [];
-  return Array.isArray(p) ? p : [p];
+  const list = Array.isArray(p) ? p : [p];
+  const ten = list.filter((c) => /10%/.test(c.label));
+  return ten.length ? ten : list;
 }
 
 export const stages = [
