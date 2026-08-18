@@ -38,13 +38,6 @@
       gap: 14px;
       flex-wrap: wrap;
     }
-    .hud-left {
-      top: 68px;
-      left: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
     .hud-panel {
       display: flex;
       align-items: center;
@@ -82,17 +75,17 @@
       color: #e0b56a;
     }
     .hud-view {
-      width: 42px;
-      height: 42px;
-      padding: 6px;
-      border-radius: 10px;
+      width: 34px;
+      height: 34px;
+      padding: 4px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .hud-view svg {
-      width: 26px;
-      height: 26px;
+      width: 22px;
+      height: 22px;
       display: block;
     }
     .hud-view .face {
@@ -118,6 +111,11 @@
     .hud-slider.budget {
       width: 160px;
     }
+    .hud-views {
+      margin-left: auto;
+      gap: 6px;
+      padding: 4px 6px;
+    }
   </style>
 </head>
 <body>
@@ -139,36 +137,6 @@
     <div id="potree_sidebar_container"></div>
   </div>
 
-  <div class="hud hud-left">
-    <button type="button" class="hud-btn hud-view" data-view="top" title="Top" aria-label="Top view">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path class="face" d="M12 13 L21 8 L21 17 L12 22 Z"/>
-        <path class="face" d="M12 13 L3 8 L3 17 L12 22 Z"/>
-        <path class="face lit" d="M12 3 L21 8 L12 13 L3 8 Z"/>
-      </svg>
-    </button>
-    <button type="button" class="hud-btn hud-view" data-view="bottom" title="Bottom" aria-label="Bottom view">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path class="face" d="M12 11 L21 16 L21 7 L12 2 Z"/>
-        <path class="face" d="M12 11 L3 16 L3 7 L12 2 Z"/>
-        <path class="face lit" d="M12 11 L21 16 L12 21 L3 16 Z"/>
-      </svg>
-    </button>
-    <button type="button" class="hud-btn hud-view" data-view="side" title="Side" aria-label="Side view">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path class="face" d="M12 3 L21 8 L12 13 L3 8 Z"/>
-        <path class="face" d="M12 13 L3 8 L3 17 L12 22 Z"/>
-        <path class="face lit" d="M12 13 L21 8 L21 17 L12 22 Z"/>
-      </svg>
-    </button>
-    <button type="button" class="hud-btn hud-view" data-view="iso" title="45°" aria-label="45 degree view">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path class="face" d="M12 13 L3 8 L3 17 L12 22 Z"/>
-        <path class="face lit" d="M12 13 L21 8 L21 17 L12 22 Z"/>
-        <path class="face lit" d="M12 3 L21 8 L12 13 L3 8 Z"/>
-      </svg>
-    </button>
-  </div>
   <div class="hud hud-top">
     <div class="hud-panel">
       <span class="hud-label">point</span>
@@ -184,6 +152,36 @@
       <span class="hud-label">size</span>
       <input id="psize" class="hud-slider" type="range" min="0.10" max="2.00" step="0.05" value="0.65">
       <span id="psize-val" class="hud-value">0.65</span>
+    </div>
+    <div class="hud-panel hud-views">
+      <button type="button" class="hud-btn hud-view" data-view="top" title="Top" aria-label="Top view">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path class="face" d="M12 13 L21 8 L21 17 L12 22 Z"/>
+          <path class="face" d="M12 13 L3 8 L3 17 L12 22 Z"/>
+          <path class="face lit" d="M12 3 L21 8 L12 13 L3 8 Z"/>
+        </svg>
+      </button>
+      <button type="button" class="hud-btn hud-view" data-view="bottom" title="Bottom" aria-label="Bottom view">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path class="face" d="M12 11 L21 16 L21 7 L12 2 Z"/>
+          <path class="face" d="M12 11 L3 16 L3 7 L12 2 Z"/>
+          <path class="face lit" d="M12 11 L21 16 L12 21 L3 16 Z"/>
+        </svg>
+      </button>
+      <button type="button" class="hud-btn hud-view" data-view="side" title="Side" aria-label="Side view">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path class="face" d="M12 3 L21 8 L12 13 L3 8 Z"/>
+          <path class="face" d="M12 13 L3 8 L3 17 L12 22 Z"/>
+          <path class="face lit" d="M12 13 L21 8 L21 17 L12 22 Z"/>
+        </svg>
+      </button>
+      <button type="button" class="hud-btn hud-view" data-view="iso" title="45°" aria-label="45 degree view">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path class="face" d="M12 13 L3 8 L3 17 L12 22 Z"/>
+          <path class="face lit" d="M12 13 L21 8 L21 17 L12 22 Z"/>
+          <path class="face lit" d="M12 3 L21 8 L12 13 L3 8 Z"/>
+        </svg>
+      </button>
     </div>
   </div>
 
