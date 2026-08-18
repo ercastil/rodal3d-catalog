@@ -26,11 +26,6 @@
       </div>
 
       <div v-if="activeCloud" class="stand-hero-viewer">
-        <div class="potree-head">
-          <a class="potree-open" :href="potreeSrcGui" target="_blank" rel="noopener noreferrer">
-            open in new tab
-          </a>
-        </div>
         <iframe
           class="potree-frame"
           :src="potreeSrc"
@@ -107,11 +102,6 @@ const activeCloud = computed(() => potreeClouds(s.value)[0] ?? null);
 const potreeSrc = computed(() =>
   activeCloud.value
     ? potreeViewerUrl(activeCloud.value.metadataPath, `${s.value.name} TLS`)
-    : null,
-);
-const potreeSrcGui = computed(() =>
-  activeCloud.value
-    ? potreeViewerUrl(activeCloud.value.metadataPath, `${s.value.name} TLS`, { gui: true })
     : null,
 );
 </script>
@@ -248,24 +238,6 @@ const potreeSrcGui = computed(() =>
   font-size: 10px;
   color: var(--gold-2);
   word-break: break-all;
-}
-.potree-head {
-  position: absolute;
-  z-index: 2;
-  top: 10px;
-  right: 10px;
-  pointer-events: none;
-}
-.potree-head > * {
-  pointer-events: auto;
-}
-.potree-open {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--gold);
-  white-space: nowrap;
 }
 .potree-frame {
   display: block;
