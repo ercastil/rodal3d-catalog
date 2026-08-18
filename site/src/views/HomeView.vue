@@ -32,31 +32,11 @@
       <div class="home-catalog">
         <div class="home-catalog-head">
           <h2>Catalog</h2>
-          <div class="filters">
-            <select v-model="sensor">
-              <option value="all">All sensors</option>
-              <option>TLS</option>
-              <option>MLS</option>
-              <option>ULS</option>
-            </select>
-            <select v-model="group">
-              <option value="all">All groups</option>
-              <option value="broadleaf">Broadleaf</option>
-              <option value="conifer">Conifer</option>
-              <option value="mixed">Mixed</option>
-              <option value="trial">Trial</option>
-            </select>
-            <select v-model="ready">
-              <option value="all">Any stage</option>
-              <option value="segmented">Segmentation complete</option>
-              <option value="raw-only">Raw only</option>
-            </select>
-          </div>
         </div>
 
         <div class="home-stand-grid">
           <article
-            v-for="s in filtered"
+            v-for="s in stands"
             :key="s.id"
             :data-stand="s.id"
             class="card stand-card"
@@ -86,7 +66,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, ref } from "vue";
+import { nextTick, ref } from "vue";
 import { useRouter } from "vue-router";
 import StandMap from "../components/StandMap.vue";
 import SensorBadge from "../components/SensorBadge.vue";
@@ -95,20 +75,7 @@ import { stands, totals } from "../data/catalog.js";
 
 const router = useRouter();
 const t = totals();
-const sensor = ref("all");
-const group = ref("all");
-const ready = ref("all");
 const selectedId = ref("");
-
-const filtered = computed(() =>
-  stands.filter((s) => {
-    if (sensor.value !== "all" && !s.sensors[sensor.value]) return false;
-    if (group.value !== "all" && s.group !== group.value) return false;
-    if (ready.value === "segmented" && s.stages.segmented !== "done") return false;
-    if (ready.value === "raw-only" && s.stages.normalized !== "todo") return false;
-    return true;
-  }),
-);
 
 function sizeLabel(s) {
   const g = s.sizesGb.tls + s.sizesGb.mls + s.sizesGb.uls;
@@ -167,7 +134,7 @@ function onCardClick(id) {
 }
 .home-stats {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.6vw;
   flex: 0 0 auto;
 }
@@ -195,9 +162,6 @@ function onCardClick(id) {
 .home-catalog-head h2 {
   margin: 0;
   font-size: clamp(1.2rem, 1.6vw, 1.7rem);
-}
-.home-catalog-head .filters {
-  margin: 0;
 }
 .home-stand-grid {
   display: grid;
@@ -229,9 +193,6 @@ function onCardClick(id) {
     grid-template-columns: 1fr;
     grid-template-rows: minmax(38vh, 42vh) minmax(0, 1fr);
     min-height: 0;
-  }
-  .home-stats {
-    grid-template-columns: 1fr 1fr;
   }
   .home-stand-grid {
     overflow: visible;
