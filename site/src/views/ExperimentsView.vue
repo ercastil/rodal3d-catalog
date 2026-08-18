@@ -9,6 +9,10 @@
 
     <div class="exp-list">
       <article v-for="e in experiments" :key="e.id" class="card exp-card">
+        <figure v-if="figures[e.figure]" class="exp-figure">
+          <img :src="figures[e.figure]" :alt="e.figureCaption" />
+          <figcaption>{{ e.figureCaption }}</figcaption>
+        </figure>
         <div class="exp-copy">
           <div class="kicker">{{ e.kind }}</div>
           <h2>{{ e.title }}</h2>
@@ -31,10 +35,6 @@
             </li>
           </ul>
         </div>
-        <figure v-if="figures[e.figure]" class="exp-figure">
-          <img :src="figures[e.figure]" :alt="e.figureCaption" />
-          <figcaption>{{ e.figureCaption }}</figcaption>
-        </figure>
       </article>
     </div>
   </section>
@@ -57,23 +57,27 @@ const figures = {
 <style scoped>
 .exp-list {
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
   margin-top: 28px;
+  align-items: start;
 }
 .exp-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 22px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
 }
 .exp-copy h2 {
   font-family: var(--serif);
-  font-size: 1.8rem;
+  font-size: 1.45rem;
   margin: 8px 0;
 }
 .exp-summary {
   color: var(--muted);
   margin: 0 0 12px;
+  font-size: 0.92rem;
+  line-height: 1.45;
 }
 .exp-stands {
   display: flex;
@@ -91,8 +95,9 @@ const figures = {
 }
 .files code {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 11px;
   color: var(--gold-2);
+  word-break: break-all;
 }
 .exp-figure {
   margin: 0;
@@ -100,8 +105,7 @@ const figures = {
 .exp-figure img {
   display: block;
   width: 100%;
-  height: 100%;
-  max-height: 380px;
+  height: 220px;
   object-fit: contain;
   background: var(--bg-2);
   border: 1px solid var(--line);
@@ -111,9 +115,15 @@ const figures = {
   font-family: var(--mono);
   font-size: 11px;
   color: var(--faint);
+  line-height: 1.35;
 }
-@media (max-width: 800px) {
-  .exp-card {
+@media (max-width: 1100px) {
+  .exp-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 700px) {
+  .exp-list {
     grid-template-columns: 1fr;
   }
 }
