@@ -66,11 +66,11 @@
       const box = pointcloud.boundingBox.clone().applyMatrix4(pointcloud.matrixWorld);
       const size = box.max.clone().sub(box.min);
       const pivot = box.min.clone().add(box.max).multiplyScalar(0.5);
-      pivot.z = box.min.z + size.z * 0.52;
+      pivot.z = box.min.z + size.z * 0.18;
 
       const view = viewer.scene.view;
       view.yaw = Math.PI / 5;
-      view.pitch = -Math.PI / 4.4;
+      view.pitch = -Math.PI / 5.2;
 
       const width = Math.max(1, viewer.renderArea.clientWidth);
       const height = Math.max(1, viewer.renderArea.clientHeight);
@@ -84,6 +84,9 @@
       const dir = view.direction.clone();
       view.radius = distance;
       view.position.copy(pivot).sub(dir.multiplyScalar(distance));
+      const side = view.getSide();
+      const up = side.clone().cross(dir);
+      view.position.add(up.multiplyScalar(-distance * 0.22));
       if (viewer.controls && viewer.controls.stop) viewer.controls.stop();
     }
 
