@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-import { nextTick, ref } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import StandMap from "../components/StandMap.vue";
 import SensorBadge from "../components/SensorBadge.vue";
@@ -84,11 +84,6 @@ function sizeLabel(s) {
 
 function selectStand(id) {
   selectedId.value = id;
-  nextTick(() => {
-    document
-      .querySelector(`[data-stand="${id}"]`)
-      ?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-  });
 }
 
 function openStand(id) {
@@ -141,7 +136,7 @@ function onCardClick(id) {
 .home-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.6vw;
+  gap: 0.45vw;
   flex: 0 0 auto;
 }
 .home-stats :deep(.stat),
@@ -149,16 +144,16 @@ function onCardClick(id) {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 6.8rem;
-  padding: 1.15vw 1vw;
+  min-height: 0;
+  padding: 0.5vw 0.65vw;
 }
 .home-stats .stat b {
-  font-size: clamp(1.85rem, 2.5vw, 2.65rem);
+  font-size: clamp(1.35rem, 1.7vw, 1.85rem);
   line-height: 1.1;
 }
 .home-stats .stat span {
-  font-size: clamp(0.88rem, 1vw, 1.05rem);
-  margin-top: 0.35rem;
+  font-size: clamp(0.7rem, 0.78vw, 0.84rem);
+  margin-top: 0.12rem;
 }
 .home-catalog {
   display: flex;
@@ -170,39 +165,68 @@ function onCardClick(id) {
 .home-catalog-head {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
   gap: 0.8vw;
-  flex-wrap: wrap;
   flex: 0 0 auto;
+  margin-bottom: 0.25vw;
 }
 .home-catalog-head h2 {
   margin: 0;
-  font-size: clamp(1.2rem, 1.6vw, 1.7rem);
+  font-size: clamp(0.95rem, 1.15vw, 1.2rem);
 }
 .home-stand-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
-  gap: 0.7vw;
-  overflow: auto;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  gap: 0.4vw;
+  overflow: hidden;
   min-height: 0;
-  padding: 0.4vw 0.2vw 0.6vw 0;
-  margin-top: 0.5vw;
+  flex: 1;
+  padding: 0;
+  margin: 0;
 }
 .stand-card {
   cursor: pointer;
+  padding: 0.4vw 0.5vw 0.45vw;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.stand-card .kicker {
+  font-size: 9px;
 }
 .stand-card h3 {
   font-family: var(--serif);
-  font-size: 1.35rem;
-  margin: 6px 0;
+  font-size: clamp(0.95rem, 1.05vw, 1.15rem);
+  margin: 2px 0 1px;
+  line-height: 1.15;
 }
 .stand-species {
   color: var(--muted);
-  font-size: 0.9rem;
-  margin: 0 0 10px;
+  font-size: clamp(0.68rem, 0.72vw, 0.78rem);
+  margin: 0 0 4px;
+  line-height: 1.2;
 }
 .stand-size {
-  margin-top: 12px;
+  margin-top: auto;
+  padding-top: 4px;
+}
+.stand-card :deep(.pill) {
+  font-size: 9px;
+  padding: 1px 5px;
+}
+.stand-card :deep(.stage-row) {
+  margin-top: 5px;
+  gap: 4px;
+}
+.stand-card :deep(.stage) {
+  font-size: 8px;
+  padding: 1px 4px;
+}
+@media (max-width: 1200px) {
+  .home-stand-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 @media (max-width: 900px) {
   .home-shell {
@@ -212,6 +236,7 @@ function onCardClick(id) {
     overflow: hidden;
   }
   .home-stand-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     overflow: auto;
   }
 }
