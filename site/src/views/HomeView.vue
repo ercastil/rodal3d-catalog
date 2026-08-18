@@ -140,10 +140,19 @@ function onCardClick(id) {
 }
 .home-stats :deep(.stat),
 .home-stats .stat {
-  padding: 0.7vw 0.9vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 6.8rem;
+  padding: 1.15vw 1vw;
 }
 .home-stats .stat b {
-  font-size: clamp(1.2rem, 1.6vw, 1.8rem);
+  font-size: clamp(1.85rem, 2.5vw, 2.65rem);
+  line-height: 1.1;
+}
+.home-stats .stat span {
+  font-size: clamp(0.88rem, 1vw, 1.05rem);
+  margin-top: 0.35rem;
 }
 .home-catalog {
   display: flex;

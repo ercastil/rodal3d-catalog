@@ -54,13 +54,5 @@ import { palettes, theme, applyTheme } from "./theme.js";
     <main>
       <RouterView />
     </main>
-    <footer class="footer">
-      <div class="wrap">
-        Public catalog mockup. Sizes and pipeline stages assume
-        <code>data/stands/&lt;id&gt;/</code> is already organized on the NLHPC cluster.
-        Source:
-        <a href="https://github.com/ercastil/rodal3d-catalog">github.com/ercastil/rodal3d-catalog</a>.
-      </div>
-    </footer>
   </div>
 </template>
