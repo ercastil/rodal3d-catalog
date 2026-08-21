@@ -439,7 +439,7 @@ nav a.router-link-active {
   height: 100%;
   min-height: 16rem;
   border: 1px solid var(--line);
-  background: var(--bg-2);
+  background: #fff;
 }
 
 .filters {

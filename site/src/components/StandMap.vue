@@ -376,19 +376,26 @@ onBeforeUnmount(() => {
 .map-controls {
   position: absolute;
   left: 8px;
-  right: 8px;
   bottom: 8px;
   z-index: 500;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 12px;
+  flex-wrap: nowrap;
+  gap: 10px 14px;
   align-items: center;
+  width: max-content;
+  max-width: calc(100% - 16px);
   background: color-mix(in srgb, var(--panel) 92%, transparent);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 6px 10px;
   font-size: 11px;
   color: var(--muted);
+}
+.map {
+  background: #fff;
+}
+.map-shell :deep(.leaflet-container) {
+  background: #fff;
 }
 .map-ctrl {
   display: flex;
