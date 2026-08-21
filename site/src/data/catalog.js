@@ -131,6 +131,44 @@ export function tlsArchiveHref(standId, code) {
   return `https://drive.google.com/file/d/${entry.id}/view`;
 }
 
+/** On-disk size of each published TLS product (cluster, binary GiB/MiB). */
+export const tlsArchiveSizes = {
+  ruil: {
+    RAW: "8.7G", CLIP: "6.6G", L1: "894M", L1n: "906M",
+    L2A: "214M", L2An: "216M", L2B: "199M", L2Bn: "201M",
+    L2C: "196M", L2Cn: "199M", polygons: "212K",
+  },
+  alerce: {
+    RAW: "9.6G", CLIP: "5.5G", L1: "724M", L1n: "733M",
+    L2A: "175M", L2An: "176M", L2B: "161M", L2Bn: "163M",
+    L2C: "165M", L2Cn: "167M", polygons: "212K",
+  },
+  lawson_01: {
+    RAW: "8.7G", CLIP: "9.2G", L1: "1.2G", L1n: "1.2G",
+    L2A: "297M", L2An: "301M", L2B: "274M", L2Bn: "278M",
+    L2C: "279M", L2Cn: "283M", polygons: "212K",
+  },
+  oregon_01: {
+    RAW: "7.8G", CLIP: "5.3G", L1: "725M", L1n: "734M",
+    L2A: "177M", L2An: "179M", L2B: "166M", L2Bn: "168M",
+    L2C: "165M", L2Cn: "167M", polygons: "208K",
+  },
+  roble: {
+    RAW: "16G", CLIP: "12G", L1: "1.5G", L1n: "1.6G",
+    L2A: "367M", L2An: "375M", L2B: "360M", L2Bn: "368M",
+    L2C: "337M", L2Cn: "345M", polygons: "220K",
+  },
+  tepa: {
+    RAW: "13G", CLIP: "7.4G", L1: "1.0G", L1n: "1.0G",
+    L2A: "240M", L2An: "245M", L2B: "236M", L2Bn: "241M",
+    L2C: "231M", L2Cn: "236M", polygons: "220K",
+  },
+};
+
+export function tlsArchiveSize(standId, code) {
+  return tlsArchiveSizes[standId]?.[code] ?? null;
+}
+
 /** Public R2 development URL (rate-limited; swap for a custom domain later). */
 export const r2PublicBase =
   "https://pub-394184f1266c46d1b234a4b7f925fff2.r2.dev";
@@ -404,6 +442,12 @@ export const stands = [
     },
     products: ["RAW", "CLIP", "L1", "L2A", "L2B", "L2C", "field plot"],
     experiments: [],
+    potree: [
+      {
+        label: "TLS curvature thinning 10%",
+        metadataPath: "/stands/tepa/metadata.json",
+      },
+    ],
   },
   {
     id: "alerce",
@@ -423,6 +467,12 @@ export const stands = [
     },
     products: ["RAW", "CLIP", "L1", "L2A", "L2B", "L2C", "field plot"],
     experiments: [],
+    potree: [
+      {
+        label: "TLS curvature thinning 10%",
+        metadataPath: "/stands/alerce/metadata.json",
+      },
+    ],
   },
   {
     id: "nativo_01",

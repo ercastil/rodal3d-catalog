@@ -126,6 +126,24 @@
       line-height: 1;
       color: #ddd;
     }
+    .hud-br {
+      right: 10px;
+      bottom: 10px;
+      text-align: right;
+      padding: 8px 12px;
+    }
+    .hud-br-kicker {
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #aaa;
+    }
+    .hud-br-points {
+      margin-top: 3px;
+      font-size: 13px;
+      color: #e0b56a;
+      font-variant-numeric: tabular-nums;
+    }
   </style>
 </head>
 <body>
@@ -196,6 +214,13 @@
     <div class="hud-panel hud-zoom-panel">
       <button type="button" class="hud-btn hud-view hud-zoom" data-zoom="in" title="Zoom in" aria-label="Zoom in">+</button>
       <button type="button" class="hud-btn hud-view hud-zoom" data-zoom="out" title="Zoom out" aria-label="Zoom out">−</button>
+    </div>
+  </div>
+
+  <div class="hud hud-panel hud-br">
+    <div>
+      <div class="hud-br-kicker">curvature thinning 10%</div>
+      <div id="hud-points" class="hud-br-points">— points</div>
     </div>
   </div>
 
@@ -310,9 +335,25 @@
         material.size = pointSize;
         material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
         material.shape = pointShape;
-        material.activeAttributeName = "elevation";
+        const attrs = pointcloud.getAttributes
+          ? pointcloud.getAttributes().map((a) => a.name)
+          : [];
+        if (attrs.includes("rgba") || attrs.includes("rgb")) {
+          material.activeAttributeName = "rgba";
+        } else {
+          material.activeAttributeName = "elevation";
+        }
         viewer.scene.addPointCloud(pointcloud);
         viewer.fitToScreen();
+
+        const n =
+          Number(pointcloud.numPoints) ||
+          Number(pointcloud.pcoGeometry?.metadata?.points) ||
+          0;
+        const el = document.getElementById("hud-points");
+        if (el && n > 0) {
+          el.textContent = `${n.toLocaleString("en-US")} points`;
+        }
       }).catch((err) => {
         console.error("Failed to load point cloud", err);
         viewer.setDescription("Failed to load point cloud");

@@ -111,15 +111,20 @@
                     <span v-else>{{ p.code }}</span>
                   </th>
                   <td>
-                    <a
-                      v-if="productHref(p.code)"
-                      class="archive-link"
-                      :href="productHref(p.code)"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      >{{ p.hint }}</a
-                    >
-                    <span v-else>{{ p.hint }}</span>
+                    <div class="archive-row">
+                      <a
+                        v-if="productHref(p.code)"
+                        class="archive-link"
+                        :href="productHref(p.code)"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >{{ p.hint }}</a
+                      >
+                      <span v-else class="archive-link">{{ p.hint }}</span>
+                      <span v-if="productSize(p.code)" class="archive-size">{{
+                        productSize(p.code)
+                      }}</span>
+                    </div>
                     <code class="archive-path"
                       >data/stands/{{ archiveDir }}/{{ p.path }}/</code
                     >
@@ -175,6 +180,7 @@ import {
   tlsArchiveProducts,
   tlsArchiveDirByStandId,
   tlsArchiveHref,
+  tlsArchiveSize,
   isPublishedStand,
 } from "../data/catalog.js";
 import { standFieldStats, standDistributions } from "../data/standStats.js";
@@ -208,6 +214,9 @@ const archiveDir = computed(() =>
 );
 function productHref(code) {
   return s.value ? tlsArchiveHref(s.value.id, code) : null;
+}
+function productSize(code) {
+  return s.value ? tlsArchiveSize(s.value.id, code) : null;
 }
 const activeCloud = computed(() => potreeClouds(s.value)[0] ?? null);
 const potreeSrc = computed(() =>
@@ -395,6 +404,19 @@ const potreeSrc = computed(() =>
 }
 .archive-table th {
   width: 4.2rem;
+}
+.archive-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.archive-size {
+  flex: 0 0 auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink);
+  white-space: nowrap;
 }
 .archive-path {
   display: block;
