@@ -27,3 +27,30 @@ export function standFieldStats(standId) {
 export function standPolygon(standId) {
   return standsGeo.features.find((f) => f.properties.standId === standId) ?? null;
 }
+
+function histogram(values, step) {
+  const nums = values.filter((v) => v != null && Number.isFinite(v));
+  if (!nums.length) return { step, labels: [], counts: [] };
+  const maxV = Math.max(...nums);
+  const nBins = Math.max(1, Math.ceil((maxV + 0.0001) / step));
+  const counts = Array(nBins).fill(0);
+  nums.forEach((v) => {
+    const i = Math.min(nBins - 1, Math.floor(v / step));
+    counts[i] += 1;
+  });
+  return {
+    step,
+    labels: counts.map((_, i) => String(i * step)),
+    counts,
+  };
+}
+
+export function standDistributions(standId) {
+  const trees = fieldTrees.features.filter((f) => f.properties.standId === standId);
+  const daps = trees.map((f) => finiteNum(f.properties.dap));
+  const hts = trees.map((f) => finiteNum(f.properties.ht));
+  return {
+    dap: histogram(daps, 5),
+    ht: histogram(hts, 2),
+  };
+}

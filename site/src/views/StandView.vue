@@ -1,23 +1,40 @@
 <template>
   <section class="stand-page" v-if="s">
+    <header class="stand-title">
+      <h1>{{ s.name }}</h1>
+      <p><em>{{ s.species }}</em></p>
+    </header>
     <div class="stand-hero">
       <div class="stand-left">
         <div class="stand-summary">
-          <p class="eyebrow">
-            <RouterLink to="/catalog" style="color: var(--gold)">catalog</RouterLink>
-            / {{ s.number }}
-          </p>
-          <h1>{{ s.name }}</h1>
-          <p class="stand-summary-species">
-            <em>{{ s.species }}</em>
-          </p>
-          <p class="stand-summary-meta">
-            {{ s.areaHa }} ha · {{ s.group }} · {{ siteMeta.crs }}
-          </p>
-          <div class="stand-summary-sensors">
-            <SensorBadge v-for="k in present" :key="k" :kind="k" />
-          </div>
-          <StagePipeline :status="s.stages" />
+          <dl class="stand-stats">
+            <div>
+              <dt>area</dt>
+              <dd>{{ fmtArea(stats.areaHa) }}</dd>
+            </div>
+            <div>
+              <dt>trees</dt>
+              <dd>{{ stats.n }}</dd>
+            </div>
+            <div>
+              <dt>mean height</dt>
+              <dd>{{ fmtNum(stats.meanHt, "m") }}</dd>
+            </div>
+            <div>
+              <dt>mean DAP</dt>
+              <dd>{{ fmtNum(stats.meanDap, "cm") }}</dd>
+            </div>
+          </dl>
+          <DistChart
+            title="height"
+            unit="m"
+            :dist="dists.ht"
+          />
+          <DistChart
+            title="DAP"
+            unit="cm"
+            :dist="dists.dap"
+          />
         </div>
         <div class="stand-hero-map">
           <StandMap
@@ -162,8 +179,8 @@ import {
   tlsArchiveHref,
   isPublishedStand,
 } from "../data/catalog.js";
-import SensorBadge from "../components/SensorBadge.vue";
-import StagePipeline from "../components/StagePipeline.vue";
+import { standFieldStats, standDistributions } from "../data/standStats.js";
+import DistChart from "../components/DistChart.vue";
 import StandMap from "../components/StandMap.vue";
 
 const props = defineProps({ id: { type: String, required: true } });
@@ -172,9 +189,22 @@ const s = computed(() => {
   if (!stand || !isPublishedStand(stand.id)) return null;
   return stand;
 });
-const present = computed(() =>
-  s.value ? ["TLS", "MLS", "ULS"].filter((k) => s.value.sensors[k]) : [],
+const stats = computed(() =>
+  s.value ? standFieldStats(s.value.id) : { n: 0, meanDap: null, meanHt: null, areaHa: null },
 );
+const dists = computed(() =>
+  s.value
+    ? standDistributions(s.value.id)
+    : { dap: { labels: [], counts: [], step: 5 }, ht: { labels: [], counts: [], step: 2 } },
+);
+function fmtArea(ha) {
+  if (ha == null) return "—";
+  return `${ha.toFixed(3)} ha`;
+}
+function fmtNum(value, unit) {
+  if (value == null) return "—";
+  return `${value.toFixed(1)} ${unit}`;
+}
 const sensorTabs = ["TLS", "MLS", "ULS"];
 const sensorTab = ref("TLS");
 const archiveDir = computed(() =>
@@ -199,12 +229,29 @@ const potreeSrc = computed(() =>
   min-height: 0;
   overflow: hidden;
 }
+.stand-title {
+  flex: 0 0 auto;
+  text-align: center;
+  padding: 2px 10px 4px;
+}
+.stand-title h1 {
+  font-family: var(--serif);
+  font-size: clamp(1.35rem, 2vw, 1.75rem);
+  font-weight: 400;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+.stand-title p {
+  margin: 1px 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
 .stand-hero {
   display: grid;
   grid-template-columns: minmax(200px, 18vw) minmax(0, 1fr) minmax(220px, 22vw);
   grid-template-rows: minmax(0, 1fr);
   gap: 8px;
-  padding: 8px 10px 10px;
+  padding: 4px 10px 10px;
   flex: 1;
   min-height: 0;
   height: 100%;
@@ -213,7 +260,7 @@ const potreeSrc = computed(() =>
 }
 .stand-left {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1.15fr) minmax(0, 0.85fr);
   gap: 8px;
   min-width: 0;
   min-height: 0;
@@ -225,34 +272,39 @@ const potreeSrc = computed(() =>
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 12px 14px 14px;
-}
-.stand-summary h1 {
-  font-family: var(--serif);
-  font-size: 1.55rem;
-  font-weight: 400;
-  margin: 6px 0 4px;
-  letter-spacing: -0.02em;
-}
-.stand-summary-species {
-  margin: 0 0 6px;
-  color: var(--muted);
-  font-size: 0.92rem;
-}
-.stand-summary-meta {
-  margin: 0 0 10px;
-  color: var(--faint);
-  font-size: 0.82rem;
-}
-.stand-summary-sensors {
+  padding: 10px 12px 12px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 8px;
+  flex-direction: column;
+  gap: 8px;
 }
-.stand-summary-note {
-  margin: 10px 0 0;
-  line-height: 1.4;
+.stand-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 10px;
+  margin: 0;
+  flex: 0 0 auto;
+}
+.stand-stats dt {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.stand-stats dd {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.stand-summary :deep(.dist) {
+  flex: 1;
+  min-height: 0;
+}
+.stand-summary :deep(.dist-svg) {
+  flex: 1;
+  height: auto;
+  min-height: 32px;
 }
 .stand-hero-map {
   min-height: 0;
