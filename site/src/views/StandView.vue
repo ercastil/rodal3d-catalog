@@ -3,10 +3,12 @@
     <div class="stand-hero">
       <div class="stand-left">
         <div class="stand-summary">
-          <h1>{{ s.name }}</h1>
-          <p class="stand-summary-species">
-            <em>{{ s.species }}</em>
-          </p>
+          <div class="stand-heading">
+            <h1>{{ s.name }}</h1>
+            <p class="stand-summary-species">
+              <em>{{ s.species }}</em>
+            </p>
+          </div>
           <dl class="stand-stats">
             <div>
               <dt>area</dt>
@@ -254,17 +256,25 @@ const potreeSrc = computed(() =>
   flex-direction: column;
   gap: 8px;
 }
+.stand-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
 .stand-summary h1 {
   font-family: var(--serif);
   font-size: 1.35rem;
   font-weight: 400;
   margin: 0;
   letter-spacing: -0.02em;
+  flex: 0 0 auto;
 }
 .stand-summary-species {
   margin: 0;
   color: var(--muted);
   font-size: 0.8rem;
+  min-width: 0;
 }
 .stand-stats {
   display: grid;
