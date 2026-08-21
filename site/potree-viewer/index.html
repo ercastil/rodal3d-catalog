@@ -335,13 +335,25 @@
         material.size = pointSize;
         material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
         material.shape = pointShape;
-        const attrs = pointcloud.getAttributes
-          ? pointcloud.getAttributes().map((a) => a.name)
-          : [];
-        if (attrs.includes("rgba") || attrs.includes("rgb")) {
-          material.activeAttributeName = "rgba";
-        } else {
-          material.activeAttributeName = "elevation";
+        material.activeAttributeName = "elevation";
+        try {
+          const raw = pointcloud.getAttributes ? pointcloud.getAttributes() : null;
+          const names = [];
+          if (Array.isArray(raw)) {
+            for (const a of raw) names.push(a?.name || a);
+          } else if (raw && Array.isArray(raw.attributes)) {
+            for (const a of raw.attributes) names.push(a?.name || a);
+          } else if (raw && typeof raw === "object") {
+            names.push(...Object.keys(raw));
+          }
+          const metaAttrs = pointcloud.pcoGeometry?.metadata?.attributes;
+          if (Array.isArray(metaAttrs)) {
+            for (const a of metaAttrs) names.push(a?.name || a);
+          }
+          if (names.includes("rgba")) material.activeAttributeName = "rgba";
+          else if (names.includes("rgb")) material.activeAttributeName = "rgb";
+        } catch (attrErr) {
+          console.warn("attribute probe failed, using elevation", attrErr);
         }
         viewer.scene.addPointCloud(pointcloud);
         viewer.fitToScreen();
