@@ -45,7 +45,7 @@ const emit = defineEmits(["select"]);
 const el = ref(null);
 const router = useRouter();
 const showBasemap = ref(true);
-const mapAlpha = ref(85);
+const mapAlpha = ref(50);
 const crownAlpha = ref(45);
 
 let map;
@@ -56,8 +56,7 @@ const treeLayers = [];
 const CROWN_FILL = "#1D9E75";
 const CROWN_STROKE = "#0F6E56";
 const TRUNK_FILL = "#C4845A";
-const BEZIER_K = 0.5523;
-const BEZIER_STEPS = 8;
+const CROWN_STEPS = 24;
 
 function cssVar(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -86,71 +85,29 @@ function metersToLatLng(lat, lon, eastM, northM) {
   return [lat + northM * mLat, lon + eastM * mLon];
 }
 
-function bezier(p0, p1, p2, p3, t) {
-  const u = 1 - t;
-  return [
-    u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0],
-    u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1],
-  ];
-}
-
 function crownLatLngs(lat, lon, n, s, e, o) {
-  const curves = [
-    [
-      [0, n],
-      [e * BEZIER_K, n],
-      [e, n * BEZIER_K],
-      [e, 0],
-    ],
-    [
-      [e, 0],
-      [e, -s * BEZIER_K],
-      [e * BEZIER_K, -s],
-      [0, -s],
-    ],
-    [
-      [0, -s],
-      [-o * BEZIER_K, -s],
-      [-o, -s * BEZIER_K],
-      [-o, 0],
-    ],
-    [
-      [-o, 0],
-      [-o, n * BEZIER_K],
-      [-o * BEZIER_K, n],
-      [0, n],
-    ],
-  ];
+  const mean = (n + s + e + o) / 4;
+  const round = (r) => r * 0.65 + mean * 0.35;
+  const rn = round(n);
+  const rs = round(s);
+  const re = round(e);
+  const ro = round(o);
   const ring = [];
-  for (const [p0, p1, p2, p3] of curves) {
-    for (let i = 0; i < BEZIER_STEPS; i += 1) {
-      const [east, north] = bezier(p0, p1, p2, p3, i / BEZIER_STEPS);
-      ring.push(metersToLatLng(lat, lon, east, north));
-    }
+  const total = CROWN_STEPS * 4;
+  for (let i = 0; i <= total; i += 1) {
+    const t = (i / total) * Math.PI * 2;
+    const cos = Math.cos(t);
+    const sin = Math.sin(t);
+    const rx = cos >= 0 ? re : ro;
+    const ry = sin >= 0 ? rn : rs;
+    ring.push(metersToLatLng(lat, lon, rx * cos, ry * sin));
   }
-  ring.push(ring[0]);
   return ring;
-}
-
-function hasCrown(p) {
-  return [p.rc_n, p.rc_s, p.rc_e, p.rc_o].every((v) => finiteNum(v) != null);
 }
 
 function trunkRadiusM(dap) {
   if (!dap || dap <= 0) return 0.08;
   return Math.max(0.08, (dap / 100) * 0.5);
-}
-
-function fmt(value, unit) {
-  if (value == null || Number.isNaN(value)) return "—";
-  return `${value} ${unit}`;
-}
-
-function tooltipHtml(p) {
-  const rc = hasCrown(p)
-    ? `N:${p.rc_n} S:${p.rc_s} E:${p.rc_e} O:${p.rc_o}`
-    : "—";
-  return `<strong>${standName(p.standId)} · ${p.id}</strong><br>DAP: ${fmt(p.dap, "cm")}<br>Altura: ${fmt(p.ht, "m")}<br>Radios (m): ${rc}`;
 }
 
 function publishedTrees() {
@@ -219,11 +176,6 @@ function selectStand(standId) {
 }
 
 function bindTree(lyr, standId) {
-  lyr.bindTooltip(tooltipHtml(lyr.feature.properties), {
-    sticky: true,
-    className: "map-tip tree-tip",
-    opacity: 1,
-  });
   if (!props.interactive) return;
   lyr.on("click", () => selectStand(standId));
 }
@@ -242,6 +194,7 @@ function addTree(feature) {
     const crown = L.polygon(crownLatLngs(lat, lon, n, s, e, o), {
       ...crownStyle(),
       interactive: props.interactive,
+      smoothFactor: 0,
     });
     crown.feature = feature;
     bindTree(crown, p.standId);
