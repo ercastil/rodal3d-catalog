@@ -68,8 +68,9 @@
 
         <div class="kicker" style="margin-top: 18px">TLS archive</div>
         <p class="stand-access">
-          Restricted data. Access is arranged in person (email or WhatsApp).
-          There is no request-access link.
+          Restricted data. Links open Google Drive; only accounts already
+          granted access can open or download. Access is arranged in person
+          (email or WhatsApp), not through a request button here.
         </p>
         <p class="stand-access">
           <a class="stand-mail" :href="`mailto:${siteMeta.contactEmail}`">{{
@@ -80,9 +81,27 @@
           <table class="meta archive-table">
             <tbody>
               <tr v-for="p in tlsArchiveProducts" :key="p.code">
-                <th>{{ p.code }}</th>
+                <th>
+                  <a
+                    v-if="productHref(p.code)"
+                    class="archive-code"
+                    :href="productHref(p.code)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >{{ p.code }}</a
+                  >
+                  <span v-else>{{ p.code }}</span>
+                </th>
                 <td>
-                  {{ p.hint }}
+                  <a
+                    v-if="productHref(p.code)"
+                    class="archive-link"
+                    :href="productHref(p.code)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >{{ p.hint }}</a
+                  >
+                  <span v-else>{{ p.hint }}</span>
                   <code class="archive-path">data/stands/{{ archiveDir }}/{{ p.path }}/</code>
                 </td>
               </tr>
@@ -111,6 +130,7 @@ import {
   potreeClouds,
   tlsArchiveProducts,
   tlsArchiveDirByStandId,
+  tlsArchiveHref,
 } from "../data/catalog.js";
 import SensorBadge from "../components/SensorBadge.vue";
 import StagePipeline from "../components/StagePipeline.vue";
@@ -124,6 +144,9 @@ const present = computed(() =>
 const archiveDir = computed(() =>
   s.value ? tlsArchiveDirByStandId[s.value.id] ?? null : null,
 );
+function productHref(code) {
+  return s.value ? tlsArchiveHref(s.value.id, code) : null;
+}
 const activeCloud = computed(() => potreeClouds(s.value)[0] ?? null);
 const potreeSrc = computed(() =>
   activeCloud.value
@@ -245,6 +268,18 @@ const potreeSrc = computed(() =>
 }
 .archive-table td {
   vertical-align: top;
+}
+.archive-link,
+.archive-code {
+  color: var(--gold);
+  text-decoration: none;
+}
+.archive-link:hover,
+.archive-code:hover {
+  text-decoration: underline;
+}
+.archive-table th {
+  width: 4.2rem;
 }
 .archive-path {
   display: block;

@@ -8,7 +8,7 @@ export const siteMeta = {
   contactEmail: "ernesto.cast.nav@gmail.com",
 };
 
-/** TLS + polygon archive on the cluster / Drive. No public download URLs. */
+/** TLS + polygon archive. Drive links require an already-shared Google account. */
 export const tlsArchiveProducts = [
   { code: "RAW", path: "TLS/raw", hint: "original scan" },
   { code: "CLIP", path: "TLS/clip", hint: "clipped to plot" },
@@ -32,6 +32,104 @@ export const tlsArchiveDirByStandId = {
   roble: "roble",
   tepa: "tepa",
 };
+
+function driveFile(id) {
+  return { kind: "file", id };
+}
+function driveFolder(id) {
+  return { kind: "folder", id };
+}
+
+/** Google Drive IDs (restricted folder). File links for LAZ; folder for polygons. */
+export const tlsArchiveDrive = {
+  ruil: {
+    RAW: driveFile("1yQckdZLi0xocpFxd-PMbzJTEe7oOCMjw"),
+    CLIP: driveFile("10Fv1pzbsNXMvS2nQbnqS2R6UMAMVcJ0G"),
+    L1: driveFile("1WiNPXMArcD1hGu30vVmeu5vf3um8wm-D"),
+    L1n: driveFile("1gsZoAyXQCFIKmVFGoVl5ZRiyuXhA8GTf"),
+    L2A: driveFile("1kMzhO1PCiCsL8L-T2b3QOfnT__WazNXT"),
+    L2An: driveFile("1xpKNtR93zDJXvAofiuzndm_nQaX0GGFV"),
+    L2B: driveFile("1AA4mnsedPVWpyOHFyiT2Arb_WXlP2DSH"),
+    L2Bn: driveFile("1e1FD340g5SG3GaDWo_h7VBIZyDHmdCKv"),
+    L2C: driveFile("1dmftJnRvBmp5M7X3f2QzqyF2PYij9tUC"),
+    L2Cn: driveFile("16sc5coQBf-NuLznNm2qt2QoRdSr9bquf"),
+    polygons: driveFolder("1ctDl44YxmbkO83A7KhbIbnbFm5sFtOPX"),
+  },
+  alerce: {
+    RAW: driveFolder("1danRWFkXj_3azgAA0DLOVZc79SK-3Pl5"),
+    CLIP: driveFile("1XSXqFbm5JC3I4BRxNVkuJWbR1aVRuqEU"),
+    L1: driveFile("1xl1Jr8zrWBPSv0UEqakpEwwmrpW20hUa"),
+    L1n: driveFile("1XV0kYvajQWzWnL3KbuDr3HuW3374wMkV"),
+    L2A: driveFile("1W3pZsgq2ANXEWzTB0sF2eOCA91z8e0KS"),
+    L2An: driveFile("1JbqDfMZzEUpOH9FO9Thg5PPXkaMV-JFy"),
+    L2B: driveFile("1-zP90Xd30jlLvPZ4TDWlRHc5h4ZMb5Oj"),
+    L2Bn: driveFile("11hnxUH9ldNC174FzfKuEeEx6FVYDbWuS"),
+    L2C: driveFile("1XMboWvbulTYk_u5m7-nMxd_a_pykC6Jh"),
+    L2Cn: driveFile("1fV6fXkxf3uusTHUn3iqtrI5L7I9TDlEF"),
+    polygons: driveFolder("1gpMNgsxqb7aqmp-_77lMbFIIwPJPnA2k"),
+  },
+  lawson_01: {
+    RAW: driveFile("12VlL4vuNWDpeZB_Cwo9kyv36HubRSF7u"),
+    CLIP: driveFolder("1jOsa6iMWUJArsKY0nRNJI426t7ENDCdM"),
+    L1: driveFile("1TbdMRLMdqnp01VwxtofH3RBFyzy_ez6i"),
+    L1n: driveFile("1fNVH-B75xV1eZNJY1vg2vIIEQ48VEEfx"),
+    L2A: driveFile("1dqQYQ9Y3WksyHSWZs7v3vbSQk75Htn4F"),
+    L2An: driveFile("1YoBcpLOmItpNVWnNIuua1t9qfzNV7apd"),
+    L2B: driveFile("1_QVuqNf-yvFboJI9e4Hjo9R9FRCz5q66"),
+    L2Bn: driveFile("1VKei8EglaRxtW96S6VQnidVeu6SntCWt"),
+    L2C: driveFile("1MyrgdsqJGWDMfX7Y1clJoKpPadqPQ4kX"),
+    L2Cn: driveFile("1cu8quGMXZpYMyGaA4w-aSHsg68CTppEH"),
+    polygons: driveFolder("1NKrNiYYK9HBYtNK0W5csZ3fSDGnup3-s"),
+  },
+  oregon_01: {
+    RAW: driveFile("1rIusgwR6rL2QVRrmT9YuqmF6Tw3AR_qJ"),
+    CLIP: driveFile("1ztB9Y1K0sGn4T7ucl8zmaf21lGXMNUZ_"),
+    L1: driveFile("1Zbc5bIfZfz7rkyyfNdUIrGA-07BVEKT9"),
+    L1n: driveFile("1EgcCe9Je80pf17BB1bZSXPzg8noBTKFv"),
+    L2A: driveFile("1HS9DjNrRZvE_zYy35zOFgnCbqnq1XkiC"),
+    L2An: driveFile("1B1Tn7Pvsdl2kA4Pz-XaNfR5YVshJhD49"),
+    L2B: driveFile("1F5kLS6pP8kMAWQ-QW36JtAGoy-M-6TXp"),
+    L2Bn: driveFile("1czChReUuUCyiC4vT_gTlCaTVmPEKjv27"),
+    L2C: driveFile("1PyN54Z2UQybExgSkLzO_oDRWZj4eTTIl"),
+    L2Cn: driveFile("10bPkDDKGQ0wVYaXjckylUAUjrDcLGDSs"),
+    polygons: driveFolder("1BuQ3rIcuAK41nJEdTIFHToOsXcTReOUV"),
+  },
+  roble: {
+    RAW: driveFolder("1pgvz7pEDuPb4P-a3PPYTPJGnC_mjDj5f"),
+    CLIP: driveFile("1pHGkOsjUvdqP6pR_DQJ_biY_yNQFGr2z"),
+    L1: driveFile("1Pl1oj9SAGWkdljNaioCe45T82_fcqzCq"),
+    L1n: driveFile("1KD2_uAjCQ_gpEwAu5BfQ8d8I0jZQiFna"),
+    L2A: driveFile("1rlV-2LW9VF7e8MyDmpSAHf4-AC9jIYGo"),
+    L2An: driveFile("1pl9DuLx4cmtKOxmhMtYKODcACeRj7PyE"),
+    L2B: driveFile("1OqpWxP_CvKbV_Py8HtLrYYZYwW0giiKw"),
+    L2Bn: driveFile("1xDxBSx-QJ7MZZcvNfDQ4jZ68HoxsnfPY"),
+    L2C: driveFile("1-w1i3OevFFpkOH2Ns4f5rD_9sS4SeVGF"),
+    L2Cn: driveFile("1KtSZaNf5fsWSeKo6-03-Et9pzGY4s-P6"),
+    polygons: driveFolder("1tQcbr_LCUyc_Ij2Mos89sHNuuNkYMAzA"),
+  },
+  tepa: {
+    RAW: driveFolder("1lxriHEIZ254sFHo-3nidaB9BHjcFbLWx"),
+    CLIP: driveFile("1-7_nkxssjQOA5_IhkWjz54rc4DciFeQT"),
+    L1: driveFile("19r6OkjOVdlWJYtm9_jCnaQpfiCJWH-rw"),
+    L1n: driveFile("1pkKEYk8SVBYs0WhtNo5XJBs1Vs9NgNbR"),
+    L2A: driveFile("1fBE8bDWP-fdu4Vz2HI1UHPSE9nPR0aGF"),
+    L2An: driveFile("1br_Ih3_xbzI5VLrZkVxeyQgpw3clX7Av"),
+    L2B: driveFile("1qHZBAGaGNTZazYNEsmMOo87YJtMTi-cg"),
+    L2Bn: driveFile("15JmJlLpS2-kJ9weNbtkCrqHPrzyL56ak"),
+    L2C: driveFile("1-4yO6ahUyM6_pNsgpERua-VpjILqxCGB"),
+    L2Cn: driveFile("13q-L1IOiPsBmvKSAMQCWMBSRq5HB6W9I"),
+    polygons: driveFolder("1p66mj8pOZdYgxd5d2Q89tE5Jvq_246F4"),
+  },
+};
+
+export function tlsArchiveHref(standId, code) {
+  const entry = tlsArchiveDrive[standId]?.[code];
+  if (!entry?.id) return null;
+  if (entry.kind === "folder") {
+    return `https://drive.google.com/drive/folders/${entry.id}`;
+  }
+  return `https://drive.google.com/file/d/${entry.id}/view`;
+}
 
 /** Public R2 development URL (rate-limited; swap for a custom domain later). */
 export const r2PublicBase =
