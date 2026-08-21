@@ -94,16 +94,21 @@ def write_gpkg(frame: gpd.GeoDataFrame, path: Path, layer: str) -> None:
     tmp.replace(path)
 
 
+def json_num(value):
+    number = to_float(value)
+    return number
+
+
 def feature_props(row, stand_id: str) -> dict:
     return {
         "standId": stand_id,
         "id": str(row["id"]),
-        "dap": row["DAP_cm"],
-        "ht": row["Field_ht"],
-        "rc_n": row["Field_rc_n"],
-        "rc_s": row["Field_rc_s"],
-        "rc_e": row["Field_rc_e"],
-        "rc_o": row["Field_rc_o"],
+        "dap": json_num(row["DAP_cm"]),
+        "ht": json_num(row["Field_ht"]),
+        "rc_n": json_num(row["Field_rc_n"]),
+        "rc_s": json_num(row["Field_rc_s"]),
+        "rc_e": json_num(row["Field_rc_e"]),
+        "rc_o": json_num(row["Field_rc_o"]),
     }
 
 
@@ -160,7 +165,10 @@ def main() -> None:
         "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"}},
         "features": features,
     }
-    args.geojson_out.write_text(json.dumps(payload, ensure_ascii=False) + "\n", encoding="utf-8")
+    args.geojson_out.write_text(
+        json.dumps(payload, ensure_ascii=False, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
     print(f"geojson {len(features)} features -> {args.geojson_out}")
 
 

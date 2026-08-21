@@ -23,12 +23,16 @@ let map;
 let layer;
 const treeLayers = [];
 
+function finiteNum(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
 function treeExtent(feature) {
   const p = feature.properties;
   const [lon, lat] = feature.geometry.coordinates;
-  const pad = hasCrown(p)
-    ? Math.max(p.rc_n, p.rc_s, p.rc_e, p.rc_o, 2)
-    : 2;
+  const radii = [p.rc_n, p.rc_s, p.rc_e, p.rc_o].map(finiteNum).filter((v) => v != null);
+  const pad = Math.max(2, ...radii);
   return L.latLngBounds(
     metersToLatLng(lat, lon, -pad, -pad),
     metersToLatLng(lat, lon, pad, pad),
@@ -105,7 +109,7 @@ function crownLatLngs(lat, lon, n, s, e, o) {
 }
 
 function hasCrown(p) {
-  return [p.rc_n, p.rc_s, p.rc_e, p.rc_o].every((v) => v != null);
+  return [p.rc_n, p.rc_s, p.rc_e, p.rc_o].every((v) => finiteNum(v) != null);
 }
 
 function trunkRadiusM(dap) {
@@ -159,10 +163,15 @@ function bindSelect(lyr, standId) {
 function addTree(feature) {
   const p = feature.properties;
   const [lon, lat] = feature.geometry.coordinates;
+  if (!Number.isFinite(lon) || !Number.isFinite(lat)) return;
   const layers = [];
+  const n = finiteNum(p.rc_n);
+  const s = finiteNum(p.rc_s);
+  const e = finiteNum(p.rc_e);
+  const o = finiteNum(p.rc_o);
 
-  if (hasCrown(p) && p.rc_n + p.rc_s + p.rc_e + p.rc_o >= 0.5) {
-    const crown = L.polygon(crownLatLngs(lat, lon, p.rc_n, p.rc_s, p.rc_e, p.rc_o), {
+  if (n != null && s != null && e != null && o != null && n + s + e + o >= 0.5) {
+    const crown = L.polygon(crownLatLngs(lat, lon, n, s, e, o), {
       ...crownStyle(p.standId),
       interactive: props.interactive,
     });
