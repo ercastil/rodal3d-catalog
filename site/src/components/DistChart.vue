@@ -122,7 +122,7 @@ const axisTicks = computed(() => {
 }
 .dist-stats {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 12px;
   color: var(--ink);
   white-space: nowrap;
 }
