@@ -1,12 +1,12 @@
 <template>
   <section class="stand-page" v-if="s">
-    <header class="stand-title">
-      <h1>{{ s.name }}</h1>
-      <p><em>{{ s.species }}</em></p>
-    </header>
     <div class="stand-hero">
       <div class="stand-left">
         <div class="stand-summary">
+          <h1>{{ s.name }}</h1>
+          <p class="stand-summary-species">
+            <em>{{ s.species }}</em>
+          </p>
           <dl class="stand-stats">
             <div>
               <dt>area</dt>
@@ -16,24 +16,20 @@
               <dt>trees</dt>
               <dd>{{ stats.n }}</dd>
             </div>
-            <div>
-              <dt>mean height</dt>
-              <dd>{{ fmtNum(stats.meanHt, "m") }}</dd>
-            </div>
-            <div>
-              <dt>mean DAP</dt>
-              <dd>{{ fmtNum(stats.meanDap, "cm") }}</dd>
-            </div>
           </dl>
           <DistChart
             title="height"
             unit="m"
             :dist="dists.ht"
+            :mean="stats.meanHt"
+            :sd="stats.sdHt"
           />
           <DistChart
             title="DAP"
             unit="cm"
             :dist="dists.dap"
+            :mean="stats.meanDap"
+            :sd="stats.sdDap"
           />
         </div>
         <div class="stand-hero-map">
@@ -190,7 +186,9 @@ const s = computed(() => {
   return stand;
 });
 const stats = computed(() =>
-  s.value ? standFieldStats(s.value.id) : { n: 0, meanDap: null, meanHt: null, areaHa: null },
+  s.value
+    ? standFieldStats(s.value.id)
+    : { n: 0, meanDap: null, sdDap: null, meanHt: null, sdHt: null, areaHa: null },
 );
 const dists = computed(() =>
   s.value
@@ -200,10 +198,6 @@ const dists = computed(() =>
 function fmtArea(ha) {
   if (ha == null) return "—";
   return `${ha.toFixed(3)} ha`;
-}
-function fmtNum(value, unit) {
-  if (value == null) return "—";
-  return `${value.toFixed(1)} ${unit}`;
 }
 const sensorTabs = ["TLS", "MLS", "ULS"];
 const sensorTab = ref("TLS");
@@ -229,29 +223,12 @@ const potreeSrc = computed(() =>
   min-height: 0;
   overflow: hidden;
 }
-.stand-title {
-  flex: 0 0 auto;
-  text-align: center;
-  padding: 2px 10px 4px;
-}
-.stand-title h1 {
-  font-family: var(--serif);
-  font-size: clamp(1.35rem, 2vw, 1.75rem);
-  font-weight: 400;
-  margin: 0;
-  letter-spacing: -0.02em;
-}
-.stand-title p {
-  margin: 1px 0 0;
-  color: var(--muted);
-  font-size: 0.88rem;
-}
 .stand-hero {
   display: grid;
   grid-template-columns: minmax(200px, 18vw) minmax(0, 1fr) minmax(220px, 22vw);
   grid-template-rows: minmax(0, 1fr);
   gap: 8px;
-  padding: 4px 10px 10px;
+  padding: 8px 10px 10px;
   flex: 1;
   min-height: 0;
   height: 100%;
@@ -276,6 +253,18 @@ const potreeSrc = computed(() =>
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+.stand-summary h1 {
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  font-weight: 400;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+.stand-summary-species {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
 }
 .stand-stats {
   display: grid;

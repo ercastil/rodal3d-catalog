@@ -1,6 +1,12 @@
 <template>
   <div class="dist">
-    <div class="dist-title">{{ title }}</div>
+    <div class="dist-head">
+      <div class="dist-title">{{ title }}</div>
+      <div class="dist-stats">
+        {{ meanLabel }}
+        <span v-if="sdLabel"> · {{ sdLabel }}</span>
+      </div>
+    </div>
     <svg
       class="dist-svg"
       :viewBox="`0 0 ${w} ${h}`"
@@ -30,11 +36,25 @@ import { computed } from "vue";
 const props = defineProps({
   title: { type: String, required: true },
   unit: { type: String, default: "" },
+  mean: { type: Number, default: null },
+  sd: { type: Number, default: null },
   dist: {
     type: Object,
     required: true,
   },
 });
+
+function fmt(value) {
+  if (value == null || Number.isNaN(value)) return "—";
+  return value.toFixed(1);
+}
+
+const meanLabel = computed(() =>
+  props.mean == null ? "—" : `${fmt(props.mean)} ${props.unit}`,
+);
+const sdLabel = computed(() =>
+  props.sd == null ? "" : `sd ${fmt(props.sd)}`,
+);
 
 const w = 100;
 const h = 36;
@@ -60,13 +80,25 @@ const axisEnd = computed(() => {
   flex-direction: column;
   flex: 1;
 }
+.dist-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 3px;
+}
 .dist-title {
   font-family: var(--mono);
   font-size: 9px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--faint);
-  margin-bottom: 3px;
+}
+.dist-stats {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink);
+  white-space: nowrap;
 }
 .dist-svg {
   display: block;

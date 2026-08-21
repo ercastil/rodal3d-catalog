@@ -11,6 +11,14 @@ function mean(values) {
   return values.reduce((a, b) => a + b, 0) / values.length;
 }
 
+function stdev(values) {
+  if (values.length < 2) return null;
+  const m = mean(values);
+  const variance =
+    values.reduce((acc, v) => acc + (v - m) ** 2, 0) / (values.length - 1);
+  return Math.sqrt(variance);
+}
+
 export function standFieldStats(standId) {
   const trees = fieldTrees.features.filter((f) => f.properties.standId === standId);
   const daps = trees.map((f) => finiteNum(f.properties.dap)).filter((v) => v != null);
@@ -19,7 +27,9 @@ export function standFieldStats(standId) {
   return {
     n: trees.length,
     meanDap: mean(daps),
+    sdDap: stdev(daps),
     meanHt: mean(hts),
+    sdHt: stdev(hts),
     areaHa: feat?.properties.areaHa ?? null,
   };
 }
