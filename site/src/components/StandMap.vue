@@ -44,7 +44,7 @@ const props = defineProps({
 const emit = defineEmits(["select"]);
 const el = ref(null);
 const router = useRouter();
-const showBasemap = ref(true);
+const showBasemap = ref(props.mode !== "crowns");
 const mapAlpha = ref(props.mode === "crowns" ? 50 : 100);
 const crownAlpha = ref(45);
 
