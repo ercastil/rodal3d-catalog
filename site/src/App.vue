@@ -24,7 +24,6 @@ const isHome = computed(
           <nav>
             <RouterLink to="/">Catalog</RouterLink>
             <RouterLink to="/experiments">Experiments</RouterLink>
-            <RouterLink to="/layout">Layout</RouterLink>
           </nav>
           <a
             class="github-link"
