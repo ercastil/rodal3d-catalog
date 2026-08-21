@@ -6,9 +6,8 @@
 import { nextTick, onMounted, onBeforeUnmount, ref, watch } from "vue";
 import L from "leaflet";
 import { useRouter } from "vue-router";
-import standsGeo from "../data/stands.geojson";
+import fieldTrees from "../data/field_trees.geojson";
 import { stands, tlsArchiveDirByStandId } from "../data/catalog.js";
-import { theme } from "../theme.js";
 
 const props = defineProps({
   activeId: { type: String, default: "" },
@@ -22,89 +21,206 @@ const el = ref(null);
 const router = useRouter();
 let map;
 let layer;
+const treeLayers = [];
 
-const nameToId = {
-  ruil: "ruil",
-  sequoia: "sequoia",
-  lawson: "lawson_01",
-  roble: "roble",
-  oregon: "oregon_01",
-  tepa: "tepa",
-  alerce: "alerce",
-};
+const CROWN_FILL = "#1D9E75";
+const CROWN_STROKE = "#0F6E56";
+const TRUNK_FILL = "#C4845A";
+const CROWN_OPACITY = 0.45;
+const BEZIER_K = 0.5523;
+const BEZIER_STEPS = 8;
 
-function geoNameFor(standId) {
-  const stand = stands.find((s) => s.id === standId);
-  if (!stand) return standId;
-  if (stand.mapName) return stand.mapName;
-  if (nameToId[stand.id]) return stand.id;
-  const base = stand.id.split("_")[0];
-  return nameToId[base] ? base : stand.id;
+function publishedTrees() {
+  return fieldTrees.features.filter((f) =>
+    Object.hasOwn(tlsArchiveDirByStandId, f.properties.standId),
+  );
 }
 
-function isActiveFeature(feature) {
-  if (!props.activeId) return false;
-  const nombre = feature.properties.Nombre;
-  return geoNameFor(props.activeId) === nombre || props.activeId === nombre;
+function standName(standId) {
+  return stands.find((s) => s.id === standId)?.name || standId;
 }
 
-function cssVar(name) {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+function metersToLatLng(lat, lon, eastM, northM) {
+  const mLat = 1 / 111320;
+  const mLon = 1 / (111320 * Math.cos((lat * Math.PI) / 180));
+  return [lat + northM * mLat, lon + eastM * mLon];
 }
 
-function styleFor(feature) {
-  const active = isActiveFeature(feature);
-  const poly = cssVar("--map-poly") || "#2a7a6c";
-  const hi = cssVar("--map-active") || "#2f4a3a";
+function bezier(p0, p1, p2, p3, t) {
+  const u = 1 - t;
+  return [
+    u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0],
+    u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1],
+  ];
+}
+
+function crownLatLngs(lat, lon, n, s, e, o) {
+  const curves = [
+    [
+      [0, n],
+      [e * BEZIER_K, n],
+      [e, n * BEZIER_K],
+      [e, 0],
+    ],
+    [
+      [e, 0],
+      [e, -s * BEZIER_K],
+      [e * BEZIER_K, -s],
+      [0, -s],
+    ],
+    [
+      [0, -s],
+      [-o * BEZIER_K, -s],
+      [-o, -s * BEZIER_K],
+      [-o, 0],
+    ],
+    [
+      [-o, 0],
+      [-o, n * BEZIER_K],
+      [-o * BEZIER_K, n],
+      [0, n],
+    ],
+  ];
+  const ring = [];
+  for (const [p0, p1, p2, p3] of curves) {
+    for (let i = 0; i < BEZIER_STEPS; i += 1) {
+      const [east, north] = bezier(p0, p1, p2, p3, i / BEZIER_STEPS);
+      ring.push(metersToLatLng(lat, lon, east, north));
+    }
+  }
+  ring.push(ring[0]);
+  return ring;
+}
+
+function hasCrown(p) {
+  return [p.rc_n, p.rc_s, p.rc_e, p.rc_o].every((v) => v != null);
+}
+
+function trunkRadiusM(dap) {
+  if (!dap || dap <= 0) return 0.08;
+  return Math.max(0.08, (dap / 100) * 0.5);
+}
+
+function fmt(value, unit) {
+  if (value == null || Number.isNaN(value)) return "—";
+  return `${value} ${unit}`;
+}
+
+function tooltipHtml(p) {
+  const rc = hasCrown(p)
+    ? `N:${p.rc_n} S:${p.rc_s} E:${p.rc_e} O:${p.rc_o}`
+    : "—";
+  return `<strong>${standName(p.standId)} · ${p.id}</strong><br>DAP: ${fmt(p.dap, "cm")}<br>Altura: ${fmt(p.ht, "m")}<br>Radios (m): ${rc}`;
+}
+
+function isActiveStand(standId) {
+  return Boolean(props.activeId) && props.activeId === standId;
+}
+
+function crownStyle(standId) {
+  const active = isActiveStand(standId);
+  const dim = Boolean(props.activeId) && !active;
   return {
-    color: active ? hi : poly,
-    weight: active ? 3 : 2,
-    fillColor: active ? hi : poly,
-    fillOpacity: active ? 0.42 : 0.28,
+    color: CROWN_STROKE,
+    weight: active ? 1.2 : 0.7,
+    fillColor: CROWN_FILL,
+    fillOpacity: dim ? 0.16 : CROWN_OPACITY,
+    opacity: dim ? 0.35 : 1,
   };
 }
 
-function bind(feature, lyr) {
-  const nombre = feature.properties.Nombre;
-  const id = nameToId[nombre] || nombre;
-  const stand = stands.find((s) => s.id === id);
-  lyr.bindTooltip(stand ? `${stand.name}` : nombre, {
+function bindSelect(lyr, standId) {
+  lyr.bindTooltip(tooltipHtml(lyr.feature.properties), {
     sticky: true,
-    className: "map-tip",
+    className: "map-tip tree-tip",
+    opacity: 1,
   });
-  if (props.interactive) {
-    lyr.on("click", () => {
-      emit("select", id);
-      if (props.navigateOnClick) {
-        router.push({ name: "stand", params: { id } });
-      }
-    });
-  }
+  if (!props.interactive) return;
+  lyr.on("click", () => {
+    emit("select", standId);
+    if (props.navigateOnClick) {
+      router.push({ name: "stand", params: { id: standId } });
+    }
+  });
 }
 
-function activeLayer() {
-  if (!layer || !props.activeId) return null;
-  const name = geoNameFor(props.activeId);
-  let found = null;
-  layer.eachLayer((lyr) => {
-    if (lyr.feature?.properties?.Nombre === name) found = lyr;
+function addTree(feature) {
+  const p = feature.properties;
+  const [lon, lat] = feature.geometry.coordinates;
+  const group = L.featureGroup();
+  group.feature = feature;
+  group.standId = p.standId;
+
+  if (hasCrown(p) && p.rc_n + p.rc_s + p.rc_e + p.rc_o >= 0.5) {
+    const crown = L.polygon(crownLatLngs(lat, lon, p.rc_n, p.rc_s, p.rc_e, p.rc_o), {
+      ...crownStyle(p.standId),
+      interactive: props.interactive,
+    });
+    crown.feature = feature;
+    bindSelect(crown, p.standId);
+    group.addLayer(crown);
+  } else {
+    const fallback = L.circleMarker([lat, lon], {
+      radius: 3,
+      color: "#888",
+      fillColor: "#888",
+      fillOpacity: 0.9,
+      weight: 0,
+      interactive: props.interactive,
+    });
+    fallback.feature = feature;
+    bindSelect(fallback, p.standId);
+    group.addLayer(fallback);
+  }
+
+  const trunk = L.circle([lat, lon], {
+    radius: trunkRadiusM(p.dap),
+    color: TRUNK_FILL,
+    fillColor: TRUNK_FILL,
+    fillOpacity: 1,
+    weight: 0,
+    pane: "treeTrunks",
+    interactive: props.interactive,
   });
-  return found;
+  trunk.feature = feature;
+  bindSelect(trunk, p.standId);
+  group.addLayer(trunk);
+
+  layer.addLayer(group);
+  treeLayers.push(group);
+}
+
+function restyle() {
+  treeLayers.forEach((group) => {
+    group.eachLayer((lyr) => {
+      if (lyr instanceof L.Polygon) {
+        lyr.setStyle(crownStyle(group.standId));
+      }
+    });
+  });
+}
+
+function activeBounds() {
+  if (!props.activeId) return layer?.getBounds();
+  const parts = treeLayers.filter((g) => g.standId === props.activeId);
+  if (!parts.length) return layer?.getBounds();
+  const b = L.latLngBounds([]);
+  parts.forEach((g) => {
+    const gb = g.getBounds();
+    if (gb.isValid()) b.extend(gb);
+  });
+  return b.isValid() ? b : layer?.getBounds();
 }
 
 function focusActive({ animate = false } = {}) {
-  if (!map) return;
-  const lyr = activeLayer();
-  if (lyr) {
-    map.fitBounds(lyr.getBounds(), {
-      padding: [40, 40],
-      maxZoom: 19,
+  if (!map || !layer) return;
+  const bounds = activeBounds();
+  if (bounds?.isValid()) {
+    map.fitBounds(bounds, {
+      padding: [36, 36],
+      maxZoom: props.activeId ? 20 : 18,
       animate,
     });
-    return;
-  }
-  if (layer?.getBounds().isValid()) {
-    map.fitBounds(layer.getBounds(), { padding: [28, 28], maxZoom: 17, animate });
   }
 }
 
@@ -116,20 +232,17 @@ onMounted(async () => {
     attributionControl: true,
     scrollWheelZoom: props.scrollWheelZoom,
   });
+  map.createPane("treeTrunks");
+  map.getPane("treeTrunks").style.zIndex = 450;
+
   tiles = L.tileLayer("https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
     attribution: "© Google",
     maxZoom: 21,
     subdomains: ["mt0", "mt1", "mt2", "mt3"],
   }).addTo(map);
 
-  layer = L.geoJSON(standsGeo, {
-    filter(feature) {
-      const id = nameToId[feature.properties.Nombre] || feature.properties.Nombre;
-      return Object.hasOwn(tlsArchiveDirByStandId, id);
-    },
-    style: styleFor,
-    onEachFeature: bind,
-  }).addTo(map);
+  layer = L.featureGroup().addTo(map);
+  publishedTrees().forEach(addTree);
 
   await nextTick();
   map.invalidateSize();
@@ -143,14 +256,10 @@ onMounted(async () => {
 watch(
   () => props.activeId,
   () => {
-    if (layer) layer.setStyle(styleFor);
+    restyle();
     focusActive({ animate: true });
   },
 );
-
-watch(theme, () => {
-  if (layer) layer.setStyle(styleFor);
-});
 
 onBeforeUnmount(() => {
   if (map) map.remove();

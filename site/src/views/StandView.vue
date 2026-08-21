@@ -155,13 +155,18 @@ import {
   tlsArchiveProducts,
   tlsArchiveDirByStandId,
   tlsArchiveHref,
+  isPublishedStand,
 } from "../data/catalog.js";
 import SensorBadge from "../components/SensorBadge.vue";
 import StagePipeline from "../components/StagePipeline.vue";
 import StandMap from "../components/StandMap.vue";
 
 const props = defineProps({ id: { type: String, required: true } });
-const s = computed(() => standById(props.id));
+const s = computed(() => {
+  const stand = standById(props.id);
+  if (!stand || !isPublishedStand(stand.id)) return null;
+  return stand;
+});
 const present = computed(() =>
   s.value ? ["TLS", "MLS", "ULS"].filter((k) => s.value.sensors[k]) : [],
 );
