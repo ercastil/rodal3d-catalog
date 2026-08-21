@@ -115,10 +115,10 @@ const axisTicks = computed(() => {
 }
 .dist-title {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--faint);
+  color: var(--muted);
 }
 .dist-stats {
   font-family: var(--mono);
