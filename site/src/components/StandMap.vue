@@ -23,6 +23,18 @@ let map;
 let layer;
 const treeLayers = [];
 
+function treeExtent(feature) {
+  const p = feature.properties;
+  const [lon, lat] = feature.geometry.coordinates;
+  const pad = hasCrown(p)
+    ? Math.max(p.rc_n, p.rc_s, p.rc_e, p.rc_o, 2)
+    : 2;
+  return L.latLngBounds(
+    metersToLatLng(lat, lon, -pad, -pad),
+    metersToLatLng(lat, lon, pad, pad),
+  );
+}
+
 const CROWN_FILL = "#1D9E75";
 const CROWN_STROKE = "#0F6E56";
 const TRUNK_FILL = "#C4845A";
@@ -147,9 +159,7 @@ function bindSelect(lyr, standId) {
 function addTree(feature) {
   const p = feature.properties;
   const [lon, lat] = feature.geometry.coordinates;
-  const group = L.featureGroup();
-  group.feature = feature;
-  group.standId = p.standId;
+  const layers = [];
 
   if (hasCrown(p) && p.rc_n + p.rc_s + p.rc_e + p.rc_o >= 0.5) {
     const crown = L.polygon(crownLatLngs(lat, lon, p.rc_n, p.rc_s, p.rc_e, p.rc_o), {
@@ -158,7 +168,7 @@ function addTree(feature) {
     });
     crown.feature = feature;
     bindSelect(crown, p.standId);
-    group.addLayer(crown);
+    layers.push(crown);
   } else {
     const fallback = L.circleMarker([lat, lon], {
       radius: 3,
@@ -170,7 +180,7 @@ function addTree(feature) {
     });
     fallback.feature = feature;
     bindSelect(fallback, p.standId);
-    group.addLayer(fallback);
+    layers.push(fallback);
   }
 
   const trunk = L.circle([lat, lon], {
@@ -184,32 +194,29 @@ function addTree(feature) {
   });
   trunk.feature = feature;
   bindSelect(trunk, p.standId);
-  group.addLayer(trunk);
+  layers.push(trunk);
 
-  layer.addLayer(group);
-  treeLayers.push(group);
+  layers.forEach((lyr) => layer.addLayer(lyr));
+  treeLayers.push({ standId: p.standId, layers });
 }
 
 function restyle() {
-  treeLayers.forEach((group) => {
-    group.eachLayer((lyr) => {
+  treeLayers.forEach((tree) => {
+    tree.layers.forEach((lyr) => {
       if (lyr instanceof L.Polygon) {
-        lyr.setStyle(crownStyle(group.standId));
+        lyr.setStyle(crownStyle(tree.standId));
       }
     });
   });
 }
 
 function activeBounds() {
-  if (!props.activeId) return layer?.getBounds();
-  const parts = treeLayers.filter((g) => g.standId === props.activeId);
-  if (!parts.length) return layer?.getBounds();
-  const b = L.latLngBounds([]);
-  parts.forEach((g) => {
-    const gb = g.getBounds();
-    if (gb.isValid()) b.extend(gb);
-  });
-  return b.isValid() ? b : layer?.getBounds();
+  const feats = publishedTrees().filter(
+    (f) => !props.activeId || f.properties.standId === props.activeId,
+  );
+  const bounds = L.latLngBounds([]);
+  feats.forEach((f) => bounds.extend(treeExtent(f)));
+  return bounds.isValid() ? bounds : null;
 }
 
 function focusActive({ animate = false } = {}) {
@@ -241,7 +248,7 @@ onMounted(async () => {
     subdomains: ["mt0", "mt1", "mt2", "mt3"],
   }).addTo(map);
 
-  layer = L.featureGroup().addTo(map);
+  layer = L.layerGroup().addTo(map);
   publishedTrees().forEach(addTree);
 
   await nextTick();
