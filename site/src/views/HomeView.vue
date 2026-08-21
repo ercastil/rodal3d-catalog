@@ -47,18 +47,31 @@
             @dblclick="openStand(s.id)"
             @keydown.enter.prevent="openStand(s.id)"
           >
-            <div class="kicker">stand_{{ s.number }} · {{ s.id }}</div>
             <h3>{{ s.name }}</h3>
             <p class="stand-species">
               <em>{{ s.species }}</em>
             </p>
-            <span v-for="k in ['TLS', 'MLS', 'ULS']" :key="k">
-              <SensorBadge v-if="s.sensors[k]" :kind="k" />
-            </span>
-            <StagePipeline :status="s.stages" />
-            <p class="kicker stand-size">
-              {{ sizeLabel(s) }} · {{ s.areaHa }} ha
-            </p>
+            <div class="stand-thumb-wrap">
+              <StandThumb :stand-id="s.id" />
+            </div>
+            <dl class="stand-stats">
+              <div>
+                <dt>area</dt>
+                <dd>{{ fmtArea(statsFor(s.id).areaHa) }}</dd>
+              </div>
+              <div>
+                <dt>trees</dt>
+                <dd>{{ statsFor(s.id).n }}</dd>
+              </div>
+              <div>
+                <dt>mean height</dt>
+                <dd>{{ fmtNum(statsFor(s.id).meanHt, "m") }}</dd>
+              </div>
+              <div>
+                <dt>mean DAP</dt>
+                <dd>{{ fmtNum(statsFor(s.id).meanDap, "cm") }}</dd>
+              </div>
+            </dl>
           </article>
         </div>
       </div>
@@ -70,17 +83,29 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import StandMap from "../components/StandMap.vue";
-import SensorBadge from "../components/SensorBadge.vue";
-import StagePipeline from "../components/StagePipeline.vue";
+import StandThumb from "../components/StandThumb.vue";
 import { publishedStands, totals } from "../data/catalog.js";
+import { standFieldStats } from "../data/standStats.js";
 
 const router = useRouter();
 const t = totals();
 const selectedId = ref("");
+const statsCache = Object.fromEntries(
+  publishedStands.map((s) => [s.id, standFieldStats(s.id)]),
+);
 
-function sizeLabel(s) {
-  const g = s.sizesGb.tls + s.sizesGb.mls + s.sizesGb.uls;
-  return g >= 10 ? `${g.toFixed(0)} G raw` : `${g.toFixed(1)} G raw`;
+function statsFor(id) {
+  return statsCache[id] || { n: 0, meanDap: null, meanHt: null, areaHa: null };
+}
+
+function fmtArea(ha) {
+  if (ha == null) return "—";
+  return `${ha.toFixed(3)} ha`;
+}
+
+function fmtNum(value, unit) {
+  if (value == null) return "—";
+  return `${value.toFixed(1)} ${unit}`;
 }
 
 function selectStand(id) {
@@ -197,9 +222,6 @@ function onCardClick(id) {
   display: flex;
   flex-direction: column;
 }
-.stand-card .kicker {
-  font-size: 9px;
-}
 .stand-card h3 {
   font-family: var(--serif);
   font-size: clamp(0.95rem, 1.05vw, 1.15rem);
@@ -212,21 +234,37 @@ function onCardClick(id) {
   margin: 0 0 4px;
   line-height: 1.2;
 }
-.stand-size {
-  margin-top: auto;
-  padding-top: 4px;
+.stand-thumb-wrap {
+  flex: 1;
+  min-height: 0;
+  margin: 2px 0 6px;
 }
-.stand-card :deep(.pill) {
-  font-size: 9px;
-  padding: 1px 5px;
+.stand-card.selected :deep(.stand-thumb polygon) {
+  fill: color-mix(in srgb, var(--map-active) 42%, transparent);
+  stroke: var(--map-active);
 }
-.stand-card :deep(.stage-row) {
-  margin-top: 5px;
-  gap: 4px;
+.stand-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 8px;
+  margin: 0;
+  flex: 0 0 auto;
 }
-.stand-card :deep(.stage) {
+.stand-stats div {
+  min-width: 0;
+}
+.stand-stats dt {
+  font-family: var(--mono);
   font-size: 8px;
-  padding: 1px 4px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.stand-stats dd {
+  margin: 0;
+  font-size: clamp(0.72rem, 0.85vw, 0.88rem);
+  color: var(--ink);
+  line-height: 1.2;
 }
 @media (max-width: 1200px) {
   .home-stand-grid {
