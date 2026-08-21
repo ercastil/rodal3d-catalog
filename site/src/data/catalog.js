@@ -173,7 +173,6 @@ export const stands = [
     species: "Nothofagus alessandrii",
     group: "broadleaf",
     sensors: sensors({ TLS: true, MLS: true, ULS: true }),
-    ulsNote: "ULS campaign shared with sequoia (250218_251020).",
     areaHa: 0.12,
     scan: { tls: "2025-02-17", mls: "2025-02", uls: "2025-02-18" },
     sizesGb: { tls: 8.8, mls: 0.76, uls: 0.1 },
