@@ -442,17 +442,24 @@ export function standById(id) {
   return stands.find((s) => s.id === id);
 }
 
+export function isPublishedStand(id) {
+  return Object.hasOwn(tlsArchiveDirByStandId, id);
+}
+
+export const publishedStands = stands.filter((s) => isPublishedStand(s.id));
+
 export function sensorCount(stand) {
   return ["TLS", "MLS", "ULS"].filter((k) => stand.sensors[k]).length;
 }
 
 export function totals() {
-  const n = stands.length;
-  const withAll = stands.filter((s) => sensorCount(s) === 3).length;
-  const gb = stands.reduce(
+  const list = publishedStands;
+  const n = list.length;
+  const withAll = list.filter((s) => sensorCount(s) === 3).length;
+  const gb = list.reduce(
     (acc, s) => acc + s.sizesGb.tls + s.sizesGb.mls + s.sizesGb.uls,
     0,
   );
-  const ready = stands.filter((s) => s.stages.segmented === "done").length;
+  const ready = list.filter((s) => s.stages.segmented === "done").length;
   return { n, withAll, gb: Math.round(gb), ready };
 }

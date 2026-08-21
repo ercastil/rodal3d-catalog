@@ -36,7 +36,7 @@
 
         <div class="home-stand-grid">
           <article
-            v-for="s in stands"
+            v-for="s in publishedStands"
             :key="s.id"
             :data-stand="s.id"
             class="card stand-card"
@@ -71,7 +71,7 @@ import { useRouter } from "vue-router";
 import StandMap from "../components/StandMap.vue";
 import SensorBadge from "../components/SensorBadge.vue";
 import StagePipeline from "../components/StagePipeline.vue";
-import { stands, totals } from "../data/catalog.js";
+import { publishedStands, totals } from "../data/catalog.js";
 
 const router = useRouter();
 const t = totals();
@@ -175,7 +175,7 @@ function onCardClick(id) {
 }
 .home-stand-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-auto-rows: 1fr;
   gap: 0.4vw;
   overflow: hidden;
@@ -225,7 +225,7 @@ function onCardClick(id) {
 }
 @media (max-width: 1200px) {
   .home-stand-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 @media (max-width: 900px) {

@@ -7,7 +7,7 @@ import { nextTick, onMounted, onBeforeUnmount, ref, watch } from "vue";
 import L from "leaflet";
 import { useRouter } from "vue-router";
 import standsGeo from "../data/stands.geojson";
-import { stands } from "../data/catalog.js";
+import { stands, tlsArchiveDirByStandId } from "../data/catalog.js";
 import { theme } from "../theme.js";
 
 const props = defineProps({
@@ -123,6 +123,10 @@ onMounted(async () => {
   }).addTo(map);
 
   layer = L.geoJSON(standsGeo, {
+    filter(feature) {
+      const id = nameToId[feature.properties.Nombre] || feature.properties.Nombre;
+      return Object.hasOwn(tlsArchiveDirByStandId, id);
+    },
     style: styleFor,
     onEachFeature: bind,
   }).addTo(map);
