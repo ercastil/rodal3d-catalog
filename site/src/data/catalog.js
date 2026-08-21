@@ -5,6 +5,32 @@ export const siteMeta = {
   crs: "EPSG:32718",
   clusterRoot: "data/",
   mockup: true,
+  contactEmail: "ernesto.cast.nav@gmail.com",
+};
+
+/** TLS + polygon archive on the cluster / Drive. No public download URLs. */
+export const tlsArchiveProducts = [
+  { code: "RAW", path: "TLS/raw", hint: "original scan" },
+  { code: "CLIP", path: "TLS/clip", hint: "clipped to plot" },
+  { code: "L1", path: "TLS/l1", hint: "xyz + intensity" },
+  { code: "L1n", path: "TLS/l1n", hint: "L1, height above ground" },
+  { code: "L2A", path: "TLS/l2a", hint: "voxel thinning 20%" },
+  { code: "L2An", path: "TLS/l2an", hint: "L2A normalized" },
+  { code: "L2B", path: "TLS/l2b", hint: "density thinning 20%" },
+  { code: "L2Bn", path: "TLS/l2bn", hint: "L2B normalized" },
+  { code: "L2C", path: "TLS/l2c", hint: "curvature thinning 20%" },
+  { code: "L2Cn", path: "TLS/l2cn", hint: "L2C normalized" },
+  { code: "polygons", path: "polygons", hint: "field trees + clip hull" },
+];
+
+/** Catalog stand id → folder name under data/stands/. */
+export const tlsArchiveDirByStandId = {
+  ruil: "ruil",
+  alerce: "alerce",
+  lawson_01: "lawson",
+  oregon_01: "oregon",
+  roble: "roble",
+  tepa: "tepa",
 };
 
 /** Public R2 development URL (rate-limited; swap for a custom domain later). */
@@ -62,7 +88,7 @@ export const stands = [
       MLS: ["raw/ruil.laz"],
       ULS: ["raw/campaign_250218_ruil_sequoia/", "derived/ruil_uls_simplified.laz"],
     },
-    products: ["DTM", "COPC", "3DFin stems", "TreeX stems", "field plot"],
+    products: ["RAW", "CLIP", "L1", "L2A", "L2B", "L2C", "field plot"],
     experiments: ["3dfin-vs-treex", "reconstruct"],
     potree: [
       {
@@ -113,7 +139,7 @@ export const stands = [
       MLS: ["raw/lawson_01.laz"],
       ULS: ["raw/campaign_250219_lawson_1_2/", "derived/lawson_1_2_uls.laz"],
     },
-    products: ["DTM", "COPC", "3DFin stems", "TreeX stems", "field plot"],
+    products: ["RAW", "CLIP", "L1", "L2A", "L2B", "L2C", "field plot"],
     experiments: ["3dfin-vs-treex"],
     potree: [
       {
@@ -163,7 +189,7 @@ export const stands = [
       MLS: ["raw/oregon_01.laz"],
       ULS: ["raw/campaign_250220_oregon_1/"],
     },
-    products: ["3DFin stems", "TreeX stems", "field plot"],
+    products: ["RAW", "CLIP", "L1", "L2A", "L2B", "L2C", "field plot"],
     experiments: ["3dfin-vs-treex"],
     potree: [
       {
@@ -212,7 +238,7 @@ export const stands = [
       MLS: ["raw/roble.laz"],
       ULS: ["raw/campaign_250221_roble/", "derived/roble_uls.laz"],
     },
-    products: ["DTM", "COPC", "3DFin stems", "TreeX stems", "field plot", "thinning 30%"],
+    products: ["RAW", "CLIP", "L1", "L2A", "L2B", "L2C", "field plot"],
     experiments: ["3dfin-vs-treex"],
     potree: [
       {
@@ -279,7 +305,7 @@ export const stands = [
       MLS: ["raw/09_Tepas_Optimized.laz"],
       ULS: ["raw/campaign_250224_tepa/", "derived/tepa_uls.laz"],
     },
-    products: ["DTM", "thinning 30%", "field plot"],
+    products: ["RAW", "CLIP", "L1", "L2A", "L2B", "L2C", "field plot"],
     experiments: [],
   },
   {
@@ -298,7 +324,7 @@ export const stands = [
       MLS: ["raw/Alerce_Optimized.laz"],
       ULS: ["raw/campaign_250225_alerce/"],
     },
-    products: ["field plot"],
+    products: ["RAW", "CLIP", "L1", "L2A", "L2B", "L2C", "field plot"],
     experiments: [],
   },
   {

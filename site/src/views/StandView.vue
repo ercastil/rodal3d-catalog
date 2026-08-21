@@ -66,16 +66,32 @@
           </RouterLink>
         </div>
 
-        <div class="kicker" style="margin-top: 18px">files (mock)</div>
-        <div v-for="k in ['TLS', 'MLS', 'ULS']" :key="k" class="stand-files-block">
-          <div class="kicker">{{ k }}</div>
-          <ul v-if="s.files[k].length" class="files">
-            <li v-for="f in s.files[k]" :key="f">
-              <code>…/{{ s.id }}/{{ k }}/{{ f }}</code>
-            </li>
-          </ul>
-          <p v-else class="kicker">no {{ k }}</p>
-        </div>
+        <div class="kicker" style="margin-top: 18px">TLS archive</div>
+        <p class="stand-access">
+          Restricted data. Access is arranged in person (email or WhatsApp).
+          There is no request-access link.
+        </p>
+        <p class="stand-access">
+          <a class="stand-mail" :href="`mailto:${siteMeta.contactEmail}`">{{
+            siteMeta.contactEmail
+          }}</a>
+        </p>
+        <template v-if="archiveDir">
+          <table class="meta archive-table">
+            <tbody>
+              <tr v-for="p in tlsArchiveProducts" :key="p.code">
+                <th>{{ p.code }}</th>
+                <td>
+                  {{ p.hint }}
+                  <code class="archive-path">data/stands/{{ archiveDir }}/{{ p.path }}/</code>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </template>
+        <p v-else class="kicker stand-access">
+          TLS archive not published for this stand yet.
+        </p>
       </aside>
     </div>
   </section>
@@ -88,7 +104,14 @@
 <script setup>
 import { computed } from "vue";
 import { RouterLink } from "vue-router";
-import { standById, siteMeta, potreeViewerUrl, potreeClouds } from "../data/catalog.js";
+import {
+  standById,
+  siteMeta,
+  potreeViewerUrl,
+  potreeClouds,
+  tlsArchiveProducts,
+  tlsArchiveDirByStandId,
+} from "../data/catalog.js";
 import SensorBadge from "../components/SensorBadge.vue";
 import StagePipeline from "../components/StagePipeline.vue";
 import StandMap from "../components/StandMap.vue";
@@ -97,6 +120,9 @@ const props = defineProps({ id: { type: String, required: true } });
 const s = computed(() => standById(props.id));
 const present = computed(() =>
   s.value ? ["TLS", "MLS", "ULS"].filter((k) => s.value.sensors[k]) : [],
+);
+const archiveDir = computed(() =>
+  s.value ? tlsArchiveDirByStandId[s.value.id] ?? null : null,
 );
 const activeCloud = computed(() => potreeClouds(s.value)[0] ?? null);
 const potreeSrc = computed(() =>
@@ -202,8 +228,31 @@ const potreeSrc = computed(() =>
   font-size: 0.9rem;
   line-height: 1.45;
 }
-.stand-files-block {
+.stand-access {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+.stand-mail {
+  color: var(--gold);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  word-break: break-all;
+}
+.archive-table {
   margin-top: 10px;
+}
+.archive-table td {
+  vertical-align: top;
+}
+.archive-path {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--faint);
+  word-break: break-all;
 }
 .meta {
   width: 100%;
