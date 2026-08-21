@@ -2,6 +2,7 @@
   <section class="home-shell">
     <div class="home-map">
       <StandMap
+        mode="polygons"
         :active-id="selectedId"
         :navigate-on-click="false"
         :scroll-wheel-zoom="true"
@@ -119,6 +120,10 @@ function onCardClick(id) {
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+}
+.home-map :deep(.map-shell) {
+  height: 100%;
+  min-height: 0;
 }
 .home-map :deep(.map) {
   height: 100%;

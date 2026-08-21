@@ -20,7 +20,12 @@
           <StagePipeline :status="s.stages" />
         </div>
         <div class="stand-hero-map">
-          <StandMap :active-id="s.id" />
+          <StandMap
+            mode="crowns"
+            :active-id="s.id"
+            :navigate-on-click="false"
+            :scroll-wheel-zoom="true"
+          />
         </div>
       </div>
 
@@ -252,6 +257,10 @@ const potreeSrc = computed(() =>
 .stand-hero-map {
   min-height: 0;
   overflow: hidden;
+}
+.stand-hero-map :deep(.map-shell) {
+  height: 100%;
+  min-height: 0;
 }
 .stand-hero-map :deep(.map) {
   height: 100%;

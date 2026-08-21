@@ -33,6 +33,14 @@ STANDS = {
     "roble": ("roble", "roble03.gpkg"),
     "tepa": ("tepa", "tepa3.gpkg"),
 }
+CLIP = {
+    "ruil": ("ruil", "ruil_clip.gpkg"),
+    "alerce": ("alerce", "alerce_clip.gpkg"),
+    "lawson_01": ("lawson", "lawson_clip.gpkg"),
+    "oregon_01": ("oregon", "oregon_clip.gpkg"),
+    "roble": ("roble", "roble_clip.gpkg"),
+    "tepa": ("tepa", "tepa_clip.gpkg"),
+}
 
 
 def to_float(value):
@@ -130,6 +138,11 @@ def main() -> None:
         action="store_true",
         help="Overwrite field GPKGs with slimmed attributes",
     )
+    p.add_argument(
+        "--clip-geojson-out",
+        type=Path,
+        help="WGS84 FeatureCollection of cluster clip hulls",
+    )
     args = p.parse_args()
 
     features = []
@@ -170,6 +183,53 @@ def main() -> None:
         encoding="utf-8",
     )
     print(f"geojson {len(features)} features -> {args.geojson_out}")
+
+    if args.clip_geojson_out:
+        clip_features = []
+        for stand_id, (folder, filename) in CLIP.items():
+            src = args.stands_root / folder / "polygons" / filename
+            if not src.exists():
+                print(f"missing clip {src}")
+                continue
+            layers = gpd.list_layers(src)
+            names = layers["name"].tolist()
+            layer = "hull" if "hull" in names else names[0]
+            gdf = gpd.read_file(src, layer=layer).to_crs("EPSG:4326")
+            geom = (
+                gdf.geometry.union_all()
+                if hasattr(gdf.geometry, "union_all")
+                else gdf.unary_union
+            )
+            clip_features.append(
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "id": stand_id,
+                        "Nombre": folder,
+                        "standId": stand_id,
+                    },
+                    "geometry": geom.__geo_interface__,
+                }
+            )
+        args.clip_geojson_out.parent.mkdir(parents=True, exist_ok=True)
+        args.clip_geojson_out.write_text(
+            json.dumps(
+                {
+                    "type": "FeatureCollection",
+                    "name": "clip_polygons",
+                    "crs": {
+                        "type": "name",
+                        "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"},
+                    },
+                    "features": clip_features,
+                },
+                ensure_ascii=False,
+                allow_nan=False,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        print(f"clip geojson {len(clip_features)} features -> {args.clip_geojson_out}")
 
 
 if __name__ == "__main__":

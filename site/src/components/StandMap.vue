@@ -1,15 +1,40 @@
 <template>
-  <div ref="el" class="map"></div>
+  <div class="map-shell">
+    <div ref="el" class="map"></div>
+    <div v-if="mode === 'crowns'" class="map-controls">
+      <label class="map-ctrl">
+        <input type="checkbox" v-model="showBasemap" />
+        Satellite
+      </label>
+      <label class="map-ctrl">
+        Map
+        <input
+          type="range"
+          min="0"
+          max="100"
+          v-model.number="mapAlpha"
+          :disabled="!showBasemap"
+        />
+      </label>
+      <label class="map-ctrl">
+        Crowns
+        <input type="range" min="5" max="95" v-model.number="crownAlpha" />
+      </label>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { nextTick, onMounted, onBeforeUnmount, ref, watch } from "vue";
 import L from "leaflet";
 import { useRouter } from "vue-router";
+import standsGeo from "../data/stands.geojson";
 import fieldTrees from "../data/field_trees.geojson";
 import { stands, tlsArchiveDirByStandId } from "../data/catalog.js";
+import { theme } from "../theme.js";
 
 const props = defineProps({
+  mode: { type: String, default: "polygons" },
   activeId: { type: String, default: "" },
   interactive: { type: Boolean, default: true },
   navigateOnClick: { type: Boolean, default: true },
@@ -19,41 +44,40 @@ const props = defineProps({
 const emit = defineEmits(["select"]);
 const el = ref(null);
 const router = useRouter();
+const showBasemap = ref(true);
+const mapAlpha = ref(85);
+const crownAlpha = ref(45);
+
 let map;
-let layer;
+let tiles;
+let polyLayer;
 const treeLayers = [];
-
-function finiteNum(value) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : null;
-}
-
-function treeExtent(feature) {
-  const p = feature.properties;
-  const [lon, lat] = feature.geometry.coordinates;
-  const radii = [p.rc_n, p.rc_s, p.rc_e, p.rc_o].map(finiteNum).filter((v) => v != null);
-  const pad = Math.max(2, ...radii);
-  return L.latLngBounds(
-    metersToLatLng(lat, lon, -pad, -pad),
-    metersToLatLng(lat, lon, pad, pad),
-  );
-}
 
 const CROWN_FILL = "#1D9E75";
 const CROWN_STROKE = "#0F6E56";
 const TRUNK_FILL = "#C4845A";
-const CROWN_OPACITY = 0.45;
 const BEZIER_K = 0.5523;
 const BEZIER_STEPS = 8;
 
-function publishedTrees() {
-  return fieldTrees.features.filter((f) =>
-    Object.hasOwn(tlsArchiveDirByStandId, f.properties.standId),
-  );
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function featureStandId(feature) {
+  return feature.properties.standId || feature.properties.Nombre;
+}
+
+function isPublishedFeature(feature) {
+  return Object.hasOwn(tlsArchiveDirByStandId, featureStandId(feature));
 }
 
 function standName(standId) {
   return stands.find((s) => s.id === standId)?.name || standId;
+}
+
+function finiteNum(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
 }
 
 function metersToLatLng(lat, lon, eastM, northM) {
@@ -129,35 +153,79 @@ function tooltipHtml(p) {
   return `<strong>${standName(p.standId)} · ${p.id}</strong><br>DAP: ${fmt(p.dap, "cm")}<br>Altura: ${fmt(p.ht, "m")}<br>Radios (m): ${rc}`;
 }
 
-function isActiveStand(standId) {
-  return Boolean(props.activeId) && props.activeId === standId;
+function publishedTrees() {
+  return fieldTrees.features.filter((f) => {
+    if (!Object.hasOwn(tlsArchiveDirByStandId, f.properties.standId)) return false;
+    if (props.mode === "crowns" && props.activeId) {
+      return f.properties.standId === props.activeId;
+    }
+    return true;
+  });
 }
 
-function crownStyle(standId) {
-  const active = isActiveStand(standId);
-  const dim = Boolean(props.activeId) && !active;
+function treeExtent(feature) {
+  const p = feature.properties;
+  const [lon, lat] = feature.geometry.coordinates;
+  const radii = [p.rc_n, p.rc_s, p.rc_e, p.rc_o]
+    .map(finiteNum)
+    .filter((v) => v != null);
+  const pad = Math.max(2, ...radii);
+  return L.latLngBounds(
+    metersToLatLng(lat, lon, -pad, -pad),
+    metersToLatLng(lat, lon, pad, pad),
+  );
+}
+
+function polyStyle(feature) {
+  const active = Boolean(props.activeId) && featureStandId(feature) === props.activeId;
+  const poly = cssVar("--map-poly") || "#2a7a6c";
+  const hi = cssVar("--map-active") || "#2f4a3a";
   return {
-    color: CROWN_STROKE,
-    weight: active ? 1.2 : 0.7,
-    fillColor: CROWN_FILL,
-    fillOpacity: dim ? 0.16 : CROWN_OPACITY,
-    opacity: dim ? 0.35 : 1,
+    color: active ? hi : poly,
+    weight: active ? 3 : 2,
+    fillColor: active ? hi : poly,
+    fillOpacity: active ? 0.42 : 0.28,
   };
 }
 
-function bindSelect(lyr, standId) {
+function crownStyle() {
+  return {
+    color: CROWN_STROKE,
+    weight: 0.7,
+    fillColor: CROWN_FILL,
+    fillOpacity: crownAlpha.value / 100,
+    opacity: 1,
+  };
+}
+
+function applyBasemap() {
+  if (!tiles) return;
+  tiles.setOpacity(showBasemap.value ? mapAlpha.value / 100 : 0);
+}
+
+function applyCrowns() {
+  treeLayers.forEach((tree) => {
+    tree.layers.forEach((lyr) => {
+      if (lyr instanceof L.Polygon) lyr.setStyle(crownStyle());
+    });
+  });
+}
+
+function selectStand(standId) {
+  emit("select", standId);
+  if (props.navigateOnClick) {
+    router.push({ name: "stand", params: { id: standId } });
+  }
+}
+
+function bindTree(lyr, standId) {
   lyr.bindTooltip(tooltipHtml(lyr.feature.properties), {
     sticky: true,
     className: "map-tip tree-tip",
     opacity: 1,
   });
   if (!props.interactive) return;
-  lyr.on("click", () => {
-    emit("select", standId);
-    if (props.navigateOnClick) {
-      router.push({ name: "stand", params: { id: standId } });
-    }
-  });
+  lyr.on("click", () => selectStand(standId));
 }
 
 function addTree(feature) {
@@ -172,11 +240,11 @@ function addTree(feature) {
 
   if (n != null && s != null && e != null && o != null && n + s + e + o >= 0.5) {
     const crown = L.polygon(crownLatLngs(lat, lon, n, s, e, o), {
-      ...crownStyle(p.standId),
+      ...crownStyle(),
       interactive: props.interactive,
     });
     crown.feature = feature;
-    bindSelect(crown, p.standId);
+    bindTree(crown, p.standId);
     layers.push(crown);
   } else {
     const fallback = L.circleMarker([lat, lon], {
@@ -188,7 +256,7 @@ function addTree(feature) {
       interactive: props.interactive,
     });
     fallback.feature = feature;
-    bindSelect(fallback, p.standId);
+    bindTree(fallback, p.standId);
     layers.push(fallback);
   }
 
@@ -202,45 +270,56 @@ function addTree(feature) {
     interactive: props.interactive,
   });
   trunk.feature = feature;
-  bindSelect(trunk, p.standId);
+  bindTree(trunk, p.standId);
   layers.push(trunk);
-
-  layers.forEach((lyr) => layer.addLayer(lyr));
+  layers.forEach((lyr) => lyr.addTo(map));
   treeLayers.push({ standId: p.standId, layers });
 }
 
-function restyle() {
-  treeLayers.forEach((tree) => {
-    tree.layers.forEach((lyr) => {
-      if (lyr instanceof L.Polygon) {
-        lyr.setStyle(crownStyle(tree.standId));
-      }
-    });
-  });
+function addPolygons() {
+  polyLayer = L.geoJSON(standsGeo, {
+    filter: isPublishedFeature,
+    style: polyStyle,
+    onEachFeature(feature, lyr) {
+      const id = featureStandId(feature);
+      lyr.bindTooltip(standName(id), { sticky: true, className: "map-tip" });
+      if (!props.interactive) return;
+      lyr.on("click", () => selectStand(id));
+    },
+  }).addTo(map);
 }
 
 function activeBounds() {
-  const feats = publishedTrees().filter(
-    (f) => !props.activeId || f.properties.standId === props.activeId,
-  );
+  if (props.mode === "polygons") {
+    if (!polyLayer) return null;
+    if (props.activeId) {
+      let found = null;
+      polyLayer.eachLayer((lyr) => {
+        if (featureStandId(lyr.feature) === props.activeId) found = lyr;
+      });
+      if (found) return found.getBounds();
+    }
+    return polyLayer.getBounds();
+  }
   const bounds = L.latLngBounds([]);
-  feats.forEach((f) => bounds.extend(treeExtent(f)));
+  publishedTrees().forEach((f) => {
+    const [lon, lat] = f.geometry.coordinates;
+    if (Number.isFinite(lon) && Number.isFinite(lat)) bounds.extend(treeExtent(f));
+  });
   return bounds.isValid() ? bounds : null;
 }
 
 function focusActive({ animate = false } = {}) {
-  if (!map || !layer) return;
+  if (!map) return;
   const bounds = activeBounds();
   if (bounds?.isValid()) {
     map.fitBounds(bounds, {
       padding: [36, 36],
-      maxZoom: props.activeId ? 20 : 18,
+      maxZoom: props.mode === "crowns" ? 20 : props.activeId ? 19 : 17,
       animate,
     });
   }
 }
-
-let tiles;
 
 onMounted(async () => {
   map = L.map(el.value, {
@@ -256,9 +335,10 @@ onMounted(async () => {
     maxZoom: 21,
     subdomains: ["mt0", "mt1", "mt2", "mt3"],
   }).addTo(map);
+  applyBasemap();
 
-  layer = L.layerGroup().addTo(map);
-  publishedTrees().forEach(addTree);
+  if (props.mode === "polygons") addPolygons();
+  else publishedTrees().forEach(addTree);
 
   await nextTick();
   map.invalidateSize();
@@ -272,12 +352,53 @@ onMounted(async () => {
 watch(
   () => props.activeId,
   () => {
-    restyle();
+    if (polyLayer) polyLayer.setStyle(polyStyle);
     focusActive({ animate: true });
   },
 );
+watch(theme, () => {
+  if (polyLayer) polyLayer.setStyle(polyStyle);
+});
+watch([showBasemap, mapAlpha], applyBasemap);
+watch(crownAlpha, applyCrowns);
 
 onBeforeUnmount(() => {
   if (map) map.remove();
 });
 </script>
+
+<style scoped>
+.map-shell {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+}
+.map-controls {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  z-index: 500;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.map-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  user-select: none;
+}
+.map-ctrl input[type="range"] {
+  width: 72px;
+  accent-color: var(--gold);
+}
+</style>
