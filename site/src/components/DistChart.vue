@@ -24,8 +24,13 @@
       />
     </svg>
     <div class="dist-axis">
-      <span>{{ dist.labels[0] ?? "0" }}</span>
-      <span>{{ axisEnd }} {{ unit }}</span>
+      <span
+        v-for="(tick, i) in axisTicks"
+        :key="`${tick.value}-${i}`"
+        class="dist-tick"
+        :class="{ start: i === 0, end: i === axisTicks.length - 1 }"
+        :style="{ left: `${tick.pct}%` }"
+      >{{ tick.label }}</span>
     </div>
   </div>
 </template>
@@ -66,10 +71,31 @@ const barW = computed(() =>
   props.dist.counts.length ? (w - pad * 2) / props.dist.counts.length : 0,
 );
 const gap = 0.15;
-const axisEnd = computed(() => {
+const axisTicks = computed(() => {
   const n = props.dist.counts.length;
-  if (!n) return "0";
-  return String(n * props.dist.step);
+  const step = props.dist.step || 1;
+  if (!n) return [];
+  const maxVal = n * step;
+  const stride = n <= 8 ? 1 : Math.ceil(n / 7);
+  const ticks = [];
+  for (let i = 0; i < n; i += stride) {
+    ticks.push({
+      value: i * step,
+      pct: (i / n) * 100,
+      label: String(i * step),
+    });
+  }
+  const last = ticks[ticks.length - 1];
+  if (!last || last.value !== maxVal) {
+    ticks.push({
+      value: maxVal,
+      pct: 100,
+      label: `${maxVal} ${props.unit}`.trim(),
+    });
+  } else {
+    last.label = `${last.value} ${props.unit}`.trim();
+  }
+  return ticks;
 });
 </script>
 
@@ -112,11 +138,23 @@ const axisEnd = computed(() => {
   stroke-width: 0.25;
 }
 .dist-axis {
-  display: flex;
-  justify-content: space-between;
+  position: relative;
+  height: 12px;
+  margin-top: 2px;
   font-family: var(--mono);
   font-size: 8px;
   color: var(--faint);
-  margin-top: 2px;
+}
+.dist-tick {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.dist-tick.start {
+  transform: none;
+}
+.dist-tick.end {
+  transform: translateX(-100%);
 }
 </style>
