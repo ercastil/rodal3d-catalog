@@ -18,7 +18,6 @@
             <SensorBadge v-for="k in present" :key="k" :kind="k" />
           </div>
           <StagePipeline :status="s.stages" />
-          <p v-if="s.ulsNote" class="kicker stand-summary-note">{{ s.ulsNote }}</p>
         </div>
         <div class="stand-hero-map">
           <StandMap :active-id="s.id" />
@@ -39,78 +38,103 @@
       </div>
 
       <aside class="stand-info">
-        <div class="kicker">sensors</div>
-        <table class="meta">
-          <tbody>
-            <tr v-for="k in ['TLS', 'MLS', 'ULS']" :key="k">
-              <th>{{ k }}</th>
-              <td v-if="s.sensors[k]">
-                {{ s.scan[k.toLowerCase()] || "—" }}
-                · {{ s.sizesGb[k.toLowerCase()] }} G
-              </td>
-              <td v-else style="color: var(--faint)">none</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div class="kicker" style="margin-top: 16px">products</div>
-        <p v-if="s.products.length" class="stand-info-text">
-          {{ s.products.join(" · ") }}
-        </p>
-        <p v-else class="kicker">no derived products yet</p>
-
-        <div v-if="s.experiments.length" style="margin-top: 16px">
-          <div class="kicker">experiments</div>
-          <RouterLink to="/experiments" style="color: var(--gold)">
-            {{ s.experiments.join(", ") }}
-          </RouterLink>
+        <div class="sensor-tabs" role="tablist" aria-label="Sensor archive">
+          <button
+            v-for="k in sensorTabs"
+            :key="k"
+            type="button"
+            role="tab"
+            class="sensor-tab"
+            :class="{ active: sensorTab === k }"
+            :aria-selected="sensorTab === k"
+            @click="sensorTab = k"
+          >
+            {{ k }}
+          </button>
         </div>
 
-        <div class="kicker" style="margin-top: 18px">TLS archive</div>
-        <p class="stand-access">
-          Restricted data. Links open Google Drive; only accounts already
-          granted access can open or download. Access is arranged in person
-          (email or WhatsApp), not through a request button here.
-        </p>
-        <p class="stand-access">
-          <a class="stand-mail" :href="`mailto:${siteMeta.contactEmail}`">{{
-            siteMeta.contactEmail
-          }}</a>
-        </p>
-        <template v-if="archiveDir">
-          <table class="meta archive-table">
-            <tbody>
-              <tr v-for="p in tlsArchiveProducts" :key="p.code">
-                <th>
-                  <a
-                    v-if="productHref(p.code)"
-                    class="archive-code"
-                    :href="productHref(p.code)"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >{{ p.code }}</a
-                  >
-                  <span v-else>{{ p.code }}</span>
-                </th>
-                <td>
-                  <a
-                    v-if="productHref(p.code)"
-                    class="archive-link"
-                    :href="productHref(p.code)"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >{{ p.hint }}</a
-                  >
-                  <span v-else>{{ p.hint }}</span>
-                  <code class="archive-path">data/stands/{{ archiveDir }}/{{ p.path }}/</code>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </template>
-        <p v-else class="kicker stand-access">
-          TLS archive not published for this stand yet.
-        </p>
+        <div v-show="sensorTab === 'TLS'" role="tabpanel">
+          <p class="stand-info-text" v-if="s.sensors.TLS">
+            {{ s.scan.tls || "—" }} · {{ s.sizesGb.tls }} G
+          </p>
+          <p v-else class="kicker">no TLS for this stand</p>
+
+          <div class="kicker" style="margin-top: 14px">products</div>
+          <p v-if="s.products.length" class="stand-info-text">
+            {{ s.products.join(" · ") }}
+          </p>
+          <p v-else class="kicker">no derived products yet</p>
+
+          <div class="kicker" style="margin-top: 16px">archive</div>
+          <p class="stand-access">
+            Restricted data. Links open Google Drive; only accounts already
+            granted access can open or download.
+          </p>
+          <p class="stand-access">
+            <a class="stand-mail" :href="`mailto:${siteMeta.contactEmail}`">{{
+              siteMeta.contactEmail
+            }}</a>
+          </p>
+          <template v-if="archiveDir">
+            <table class="meta archive-table">
+              <tbody>
+                <tr v-for="p in tlsArchiveProducts" :key="p.code">
+                  <th>
+                    <a
+                      v-if="productHref(p.code)"
+                      class="archive-code"
+                      :href="productHref(p.code)"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >{{ p.code }}</a
+                    >
+                    <span v-else>{{ p.code }}</span>
+                  </th>
+                  <td>
+                    <a
+                      v-if="productHref(p.code)"
+                      class="archive-link"
+                      :href="productHref(p.code)"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >{{ p.hint }}</a
+                    >
+                    <span v-else>{{ p.hint }}</span>
+                    <code class="archive-path"
+                      >data/stands/{{ archiveDir }}/{{ p.path }}/</code
+                    >
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </template>
+          <p v-else class="kicker stand-access">
+            TLS archive not published for this stand yet.
+          </p>
+        </div>
+
+        <div v-show="sensorTab === 'MLS'" role="tabpanel">
+          <p class="stand-info-text" v-if="s.sensors.MLS">
+            {{ s.scan.mls || "—" }} · {{ s.sizesGb.mls }} G
+          </p>
+          <p v-else class="kicker">no MLS for this stand</p>
+          <div class="kicker" style="margin-top: 16px">archive</div>
+          <p class="kicker stand-access">
+            MLS archive not published yet.
+          </p>
+        </div>
+
+        <div v-show="sensorTab === 'ULS'" role="tabpanel">
+          <p class="stand-info-text" v-if="s.sensors.ULS">
+            {{ s.scan.uls || "—" }} · {{ s.sizesGb.uls }} G
+          </p>
+          <p v-else class="kicker">no ULS for this stand</p>
+          <p v-if="s.ulsNote" class="kicker stand-access">{{ s.ulsNote }}</p>
+          <div class="kicker" style="margin-top: 16px">archive</div>
+          <p class="kicker stand-access">
+            ULS archive not published yet.
+          </p>
+        </div>
       </aside>
     </div>
   </section>
@@ -121,7 +145,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { RouterLink } from "vue-router";
 import {
   standById,
@@ -141,6 +165,8 @@ const s = computed(() => standById(props.id));
 const present = computed(() =>
   s.value ? ["TLS", "MLS", "ULS"].filter((k) => s.value.sensors[k]) : [],
 );
+const sensorTabs = ["TLS", "MLS", "ULS"];
+const sensorTab = ref("TLS");
 const archiveDir = computed(() =>
   s.value ? tlsArchiveDirByStandId[s.value.id] ?? null : null,
 );
@@ -244,6 +270,30 @@ const potreeSrc = computed(() =>
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 12px 14px 16px;
+}
+.sensor-tabs {
+  display: flex;
+  gap: 2px;
+  margin: -4px 0 12px;
+  border-bottom: 1px solid var(--line);
+}
+.sensor-tab {
+  flex: 1;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  padding: 6px 4px 8px;
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+.sensor-tab.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
 }
 .stand-info-text {
   margin: 8px 0 0;
