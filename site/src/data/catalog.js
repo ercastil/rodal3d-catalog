@@ -169,6 +169,94 @@ export function tlsArchiveSize(standId, code) {
   return tlsArchiveSizes[standId]?.[code] ?? null;
 }
 
+/**
+ * ULS RAW: one Terra campaign folder on Drive (unique copy).
+ * Shared flights: ruil+sequoia, lawson_01+lawson_02. Oregon 02 has no ULS.
+ */
+export const ulsArchiveCampaigns = {
+  "250218_251020_ruil_sequoia": {
+    folderId: "1e2_j2tybUu7wqvFLN8RjOLnxbTgZ5GH6",
+    size: "2.0G",
+  },
+  "250219_251210_lawson_1_2": {
+    folderId: "1dnGynAvNdWTaiSQiKis_WXMvhy6pJXt2",
+    size: "14G",
+  },
+  "250220_251210_oregon_1": {
+    folderId: "1CzY-3yIYNCqIjFOw-Lo0KG9YemUiY0c-",
+    size: "38G",
+  },
+  "250221_251211_rauli_01": {
+    folderId: "1zvQffCjTHJ1aV6WuV3AORgZ0RYhcVYXS",
+    size: "8.6G",
+  },
+  "250221_251217_rauli_02": {
+    folderId: "1LwChtD7PbqaLZ0siw8Ah1UHwhnxCh6L1",
+    size: "17G",
+  },
+  "250221_260105_roble": {
+    folderId: "16R3bu8wQ6a_mDmbahIA2jbsy1z-7j_G9",
+    size: "25G",
+  },
+  "250224_251217_tepa": {
+    folderId: "1Dj8wHZDPdcQ_yB6WUhcWyzoIWk-b-KH8",
+    size: "15G",
+  },
+  "250225_251218_alerce": {
+    folderId: "1punTWs5b55nHboFuuZK7_KiIZzPxRHk6",
+    size: "3.2G",
+  },
+  "250226_251218_experiment": {
+    folderId: "1F7X47vavImnwga40ify2p7bOgx6lUnjl",
+    size: "8.5G",
+  },
+  "250226_251218_nativo01": {
+    folderId: "1hRExH49F-zAkQSmk5aJnTKk-vODp4E5Z",
+    size: "17G",
+  },
+  "250226_260105_nativo_02": {
+    folderId: "1jHsSkHQ-2p4CLJX_pZebW1nuzSXl0Sts",
+    size: "13G",
+  },
+};
+
+/** Catalog stand id → Terra campaign folder name. */
+export const ulsArchiveByStandId = {
+  ruil: "250218_251020_ruil_sequoia",
+  sequoia: "250218_251020_ruil_sequoia",
+  lawson_01: "250219_251210_lawson_1_2",
+  lawson_02: "250219_251210_lawson_1_2",
+  oregon_01: "250220_251210_oregon_1",
+  rauli_01: "250221_251211_rauli_01",
+  rauli_02: "250221_251217_rauli_02",
+  roble: "250221_260105_roble",
+  tepa: "250224_251217_tepa",
+  alerce: "250225_251218_alerce",
+  nativo_01: "250226_251218_nativo01",
+  nativo_02: "250226_260105_nativo_02",
+  experimento: "250226_251218_experiment",
+};
+
+export function ulsArchiveCampaign(standId) {
+  return ulsArchiveByStandId[standId] ?? null;
+}
+
+export function ulsArchiveHref(standId) {
+  const camp = ulsArchiveCampaign(standId);
+  const id = camp ? ulsArchiveCampaigns[camp]?.folderId : null;
+  return id ? `https://drive.google.com/drive/folders/${id}` : null;
+}
+
+export function ulsArchivePath(standId) {
+  const camp = ulsArchiveCampaign(standId);
+  return camp ? `ULS/raw/${camp}/` : null;
+}
+
+export function ulsArchiveSize(standId) {
+  const camp = ulsArchiveCampaign(standId);
+  return camp ? ulsArchiveCampaigns[camp]?.size ?? null : null;
+}
+
 /** Public R2 development URL (rate-limited; swap for a custom domain later). */
 export const r2PublicBase =
   "https://pub-394184f1266c46d1b234a4b7f925fff2.r2.dev";

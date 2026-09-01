@@ -156,7 +156,48 @@
           <p v-else class="kicker">no ULS for this stand</p>
           <p v-if="s.ulsNote" class="kicker stand-access">{{ s.ulsNote }}</p>
           <div class="kicker" style="margin-top: 16px">archive</div>
-          <p class="kicker stand-access">
+          <template v-if="ulsHref">
+            <p class="stand-access">
+              Restricted data. Links open Google Drive; only accounts already
+              granted access can open or download.
+            </p>
+            <p class="stand-access">
+              <a class="stand-mail" :href="`mailto:${siteMeta.contactEmail}`">{{
+                siteMeta.contactEmail
+              }}</a>
+            </p>
+            <table class="meta archive-table">
+              <tbody>
+                <tr>
+                  <th>
+                    <a
+                      class="archive-code"
+                      :href="ulsHref"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >RAW</a
+                    >
+                  </th>
+                  <td>
+                    <div class="archive-row">
+                      <a
+                        class="archive-link"
+                        :href="ulsHref"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >Terra campaign</a
+                      >
+                      <span v-if="ulsSize" class="archive-size">{{
+                        ulsSize
+                      }}</span>
+                    </div>
+                    <code class="archive-path">{{ ulsPath }}</code>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </template>
+          <p v-else class="kicker stand-access">
             ULS archive not published yet.
           </p>
         </div>
@@ -181,6 +222,9 @@ import {
   tlsArchiveDirByStandId,
   tlsArchiveHref,
   tlsArchiveSize,
+  ulsArchiveHref,
+  ulsArchivePath,
+  ulsArchiveSize,
   isPublishedStand,
 } from "../data/catalog.js";
 import { standFieldStats, standDistributions } from "../data/standStats.js";
@@ -218,6 +262,15 @@ function productHref(code) {
 function productSize(code) {
   return s.value ? tlsArchiveSize(s.value.id, code) : null;
 }
+const ulsHref = computed(() =>
+  s.value ? ulsArchiveHref(s.value.id) : null,
+);
+const ulsPath = computed(() =>
+  s.value ? ulsArchivePath(s.value.id) : null,
+);
+const ulsSize = computed(() =>
+  s.value ? ulsArchiveSize(s.value.id) : null,
+);
 const activeCloud = computed(() => potreeClouds(s.value)[0] ?? null);
 const potreeSrc = computed(() =>
   activeCloud.value
