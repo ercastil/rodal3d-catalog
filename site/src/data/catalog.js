@@ -249,7 +249,7 @@ export function ulsArchiveHref(standId) {
 
 export function ulsArchivePath(standId) {
   const camp = ulsArchiveCampaign(standId);
-  return camp ? `ULS/raw/${camp}/` : null;
+  return camp ? `ULS/${standId}/raw/${camp}/` : null;
 }
 
 export function ulsArchiveSize(standId) {
