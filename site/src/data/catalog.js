@@ -241,9 +241,25 @@ export function ulsArchiveCampaign(standId) {
   return ulsArchiveByStandId[standId] ?? null;
 }
 
+/** Drive folder for ULS/{stand}/raw/ (Terra campaign lives inside). */
+export const ulsArchiveRawFolderByStandId = {
+  ruil: "1nTDMzw6MGeOhJqWfFvcQ95YlUOxvCKRd",
+  sequoia: "1JHEWJkxNbUx_YiXz3HY_4V_TG01Xtf_n",
+  lawson_01: "1sR27JhytNIPIIiXqCGZnqqDYT9QMMWQi",
+  lawson_02: "1CT5Ch0IoZjVgrFDZcyJe5EbI3e1U3tqb",
+  oregon_01: "1XG1Ea5if3ts2mjVdcHBZy1kYuHe9zpBH",
+  rauli_01: "19aJ-ozrOhlvpewTRCYFT4JYqPhr4BCVM",
+  rauli_02: "1V9QXLN6XGM5fYS5__4NL-xdZrtKfLlmv",
+  roble: "1r22wjPHhqut5HqILoyoEXL0BHzZiSfqh",
+  tepa: "1Euv_YAKEqP-2Bn75uKPLIpaO0yAfEKMe",
+  alerce: "1r9St_cYtk-2IzYs1qOO9sGXc43sB3JgC",
+  nativo_01: "1yWqgqgFvzIabZY9bLkqZsZp_xh8UGtwp",
+  nativo_02: "1n0-gqBcid45bWn44Kc3-G6I5reAE27-g",
+  experimento: "1VD0A8yxcRMbeDs2FZftlVKz7BHLLR6Qv",
+};
+
 export function ulsArchiveHref(standId) {
-  const camp = ulsArchiveCampaign(standId);
-  const id = camp ? ulsArchiveCampaigns[camp]?.folderId : null;
+  const id = ulsArchiveRawFolderByStandId[standId];
   return id ? `https://drive.google.com/drive/folders/${id}` : null;
 }
 
